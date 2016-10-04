@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, shlex, argparse
+import re, sys, shlex, argparse
 from subprocess import Popen, PIPE
 from os import listdir
 from os.path import isfile, join
@@ -12,13 +12,17 @@ do_quit         = 0
 num_conductions = 1
 
 binary = "./bin/Release/evolution"
-data_path = "./data"
+data_path = "../data/exp/"
+settings_folder = "./settings/"
+settings_file_ending = ".setting"
+ansi_escape = re.compile(r'\x1b[^m]*m')
+
 
 def get_available_experiments(robot):
-	settings_path = data_path + '/settings/' + robot
+	settings_path = settings_folder + robot
 	settings_files = [f for f in listdir(settings_path) if isfile(join(settings_path, f))]
 	settings_files.sort()
-	return [s.replace('.setting','') for s in settings_files]
+	return [s.replace(".setting","") for s in settings_files]
 
 def check_binary():
 	if isfile(binary): 
@@ -34,19 +38,19 @@ def execute_command(command):
 	return exitcode, out, err
 
 def conduct(robot, experiment, port, num, dry):
-	setting = "{0}/{1}".format(robot, experiment)
+	setting = "{0}{1}/{2}{3}".format(settings_folder, robot, experiment, settings_file_ending)
 	expname = "{2}_{0}_{1}".format(robot, experiment, str(num))
 	command = "{0} -n {1} -s {2} -p {3} -b"\
 		.format(binary, expname, setting, port)
 	print(command)
 
 	if not dry:		
-		output_path = "{0}/exp/{1}/".format(data_path, expname)
+		output_path = "{0}{1}/".format(data_path, expname)
 		exitcode, out, err = execute_command(command)
 		with open(output_path + "stdout.txt", "w") as out_file:
-			out_file.write(out)
+			out_file.write(ansi_escape.sub('', out))
 		with open(output_path + "stderr.txt", "w") as err_file:
-			err_file.write(err)
+			err_file.write(ansi_escape.sub('', err))
 		print "returned {0}".format(exitcode)
 
 
