@@ -1,0 +1,55 @@
+
+f = fast
+e = effcient 
+s = stop (from fast)
+
+0: fw f/e/s
+1: bw f/e/s
+2: tu f/e/s
+3: si f/e/s
+4: ro f/e/s
+
+5: hu f/e/s
+6: de f/e/s
+7: hi f/e/s
+
+every experiment is being conducted 5 times.
+
+examples: 
+    bw_f_0, bw_f_1, ..., bw_f_4
+    si_e_0, si_e_1, ..., si_e_4
+    tu_s_0, tu_s_1, ..., tu_s_4
+
+
+crawler 2dof
+* forwards  f/e/s pdm
+* backwards f/e/s pdm
+
+tadpole 4dof
+* forwards  f/e/s pdm
+* backwards f/e/s pdm
+* turn      f/e/s pdm
+
+fourlegged 12dof
+* forwards  f/e/s pdm
+* backwards f/e/s pdm
+* turn      f/e/s pdm
+* sidewards f/e/s pdm
+* rolling   f/e/s pdm
+* hurdles   f/e/s fw_e
+* debris    f/e/s fw_e
+* hills     f/e/s fw_e
+
+humanoid 22dof
+* forwards  f/e/s bw_initial
+* backwards f/e/s handcrafted initial swinging
+* turn      f/e/s handcrafted initial swinging
+* sidewards f/e/s handcrafted initial swinging
+* rolling   f/e/s pdm
+* hurdles   f/e/s fw_e
+* debris    f/e/s fw_e
+* hills     f/e/s fw_e
+
+//TODO which seeds shall be used
+
+

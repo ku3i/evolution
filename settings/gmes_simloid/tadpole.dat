@@ -1,0 +1,16 @@
+robot_id = 10
+scene_id = 0
+tcp_port = 9870
+
+self_adjusting = 1
+
+motor_learning_rate = {0.1}
+motor_mutation_rate = {0.1}
+
+max_number_of_actions = 20
+number_of_actions_begin = 20
+
+joint_gmes_learning_rate = {1.0}
+local_learning_rate = {0.001}
+
+sarsa_learning_rate = {0.001}
