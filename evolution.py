@@ -3,7 +3,7 @@
 import re, sys, shlex, argparse
 from subprocess import Popen, PIPE
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, isdir, join
 
 robot_list      = ["crawler", "tadpole", "fourlegged", "humanoid", "_scrtst"]
 passphr         = "start"
@@ -44,6 +44,10 @@ def conduct(robot, experiment, port, num, dry):
 		.format(binary, expname, setting, port)
 	print(command)
 
+	if isdir(data_path+expname):
+		print("\nWARNING: Experiment {0} has already been conducted. Skipping.\n".format(expname))
+		return
+
 	if not dry:		
 		output_path = "{0}{1}/".format(data_path, expname)
 		exitcode, out, err = execute_command(command)
@@ -82,9 +86,9 @@ def main():
 	for i in experiments_available: print("\t{0}/{1}".format(robot,i))
 
 	if (num_conductions > 1):
-		print("Every Experiment will be repeated {0} times.".format(num_conductions))
+		print("Every experiment will be repeated {0} times.".format(num_conductions))
 	else:
-		print("Every Experiment will be executed once.")
+		print("Every experiment will be executed once.")
 
 	var = raw_input("Enter '{0}' to proceed: ".format(passphr))
 	dry_run = (var != passphr)
