@@ -11,7 +11,7 @@ port_start      = 8000
 do_quit         = 0
 num_conductions = 1
 
-binary = "./bin/Release/evolution"
+binary = "nice -n 19 ./bin/Release/evolution"
 data_path = "../data/exp/"
 settings_folder = "./settings/"
 settings_file_ending = ".setting"
