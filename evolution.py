@@ -11,7 +11,8 @@ port_start      = 8000
 do_quit         = 0
 num_conductions = 1
 
-binary = "nice -n 19 ./bin/Release/evolution"
+nice = 19
+binary = "./bin/Release/evolution"
 data_path = "../data/exp/"
 settings_folder = "./settings/"
 settings_file_ending = ".setting"
@@ -40,8 +41,8 @@ def execute_command(command):
 def conduct(robot, experiment, port, num, dry):
 	setting = "{0}{1}/{2}{3}".format(settings_folder, robot, experiment, settings_file_ending)
 	expname = "{2}_{0}_{1}".format(robot, experiment, str(num))
-	command = "{0} -n {1} -s {2} -p {3} -b"\
-		.format(binary, expname, setting, port)
+	command = "nice -n {4} {0} -n {1} -s {2} -p {3} -b"\
+		.format(binary, expname, setting, port, nice)
 	print(command)
 
 	if isdir(data_path+expname):
