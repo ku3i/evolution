@@ -71,6 +71,7 @@ def main():
 	parser.add_argument('-r', '--robot' , default='fourlegged')
 	parser.add_argument('-n', '--number', default=num_conductions)
 	parser.add_argument('-p', '--port'  , default=port_start)
+	parser.add_argument('-x', '--nopass', action='store_true')
 	args = parser.parse_args()
 
 	robot           = str(args.robot)
@@ -90,8 +91,10 @@ def main():
 	else:
 		print("Every experiment will be executed once.")
 
-	var = raw_input("Enter '{0}' to proceed: ".format(passphr))
-	dry_run = (var != passphr)
+	dry_run = False
+	if not args.nopass:
+		var = raw_input("Enter '{0}' to proceed: ".format(passphr))
+		dry_run = (var != passphr)
 
 	for num in range(num_conductions):
 		conduct_all(robot, experiments_available, port_start, num, dry_run)
