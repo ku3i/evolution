@@ -61,8 +61,10 @@ def conduct(robot, experiment, port, num, dry):
 
 def conduct_all(robot, experiments, port, num, dry):
 	for e in experiments:
+		print(port)
 		conduct(robot, e, port, num, dry)
 		port += 1
+	return port
 
 
 def main():
@@ -97,8 +99,9 @@ def main():
 		var = raw_input("Enter '{0}' to proceed: ".format(passphr))
 		dry_run = (var != passphr)
 
+	port = port_start
 	for num in range(num_conductions):
-		conduct_all(robot, experiments_available, port_start, num, dry_run)
+		port = conduct_all(robot, experiments_available, port, num, dry_run)
 
 	print("\nSimulations done.\n___\n")
 
