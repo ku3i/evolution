@@ -32,7 +32,7 @@ def start_experiment(server, robot, num, user, pswd):
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(server, username=user, password=pswd)
+        ssh.connect(server, username=user, password=pswd, timeout=10)
         print("SUCCESS."),
         for cmd in execute_commands:        
             stdin, stdout, stderr = ssh.exec_command(cmd.format(robot, num))
