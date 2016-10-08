@@ -52,7 +52,7 @@ def find_experiments(path, filt):
         total += result
     if number > 0:
         print("-"*37)
-        print("{0:32} {1:3d}% {2}".format("Total: ", total/number, "COMPLETE." if int(total)==100 else ""))
+        print("{0:32} {1:3d}% {2}".format("Total: ", total/number, "COMPLETE." if int(total/number)==100 else ""))
 
 
 def main():
