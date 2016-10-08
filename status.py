@@ -33,7 +33,10 @@ def get_number_of_max_trials(path):
 
 
 def find_experiments(path, filt):
-    for d in listdir(path):
+
+    dirs = [d for d in listdir(path)]
+    dirs.sort()
+    for d in dirs:
         if filt and filt not in d: 
             print("skip")
             continue
