@@ -33,7 +33,8 @@ def get_number_of_max_trials(path):
 
 
 def find_experiments(path, filt):
-
+    total = 0
+    number = 0
     dirs = [d for d in listdir(path)]
     dirs.sort()
     for d in dirs:
@@ -47,6 +48,11 @@ def find_experiments(path, filt):
         cur_trials = get_number_of_cur_trials(exp_path)
         result = int(cur_trials*100.0/max_trials)
         print("{0:32} {1:3d}% ({2:6d}/{3:6d}) {4}".format(d, result, cur_trials, max_trials, "OK." if result==100 else ""))
+        number += 1
+        total += result
+    if number > 0:
+        print("-"*37)
+        print("{0:32} {1:3d}% {2}".format("Total: ", total/number, "COMPLETE." if total==100 else ""))
 
 
 def main():
@@ -63,7 +69,7 @@ def main():
         print("ERROR: Wrong path.")
         exit(-1)
 
-    print("\n____\nDONE.")
+    print("____\nDONE.")
 
 if __name__ == "__main__": main()
 
