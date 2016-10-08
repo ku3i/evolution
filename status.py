@@ -28,7 +28,7 @@ def get_number_of_max_trials(path):
     m = re.search("MAX_TRIALS = (\d+)", data)
     if m:
         return int(m.groups()[0])
-    print("did not find max_trials entry in {0}".format(conf))
+    print("ERROR: Did not find max. trials entry in {0}".format(conf))
     return 1 # avoid devision by zero
 
 
@@ -37,8 +37,7 @@ def find_experiments(path, filt):
     dirs = [d for d in listdir(path)]
     dirs.sort()
     for d in dirs:
-        if filt and filt not in d: 
-            print("skip")
+        if filt and filt not in d:
             continue
         exp_path = path+"/"+d
         if not is_experiment(exp_path):
@@ -61,9 +60,10 @@ def main():
     if isdir(path):
         find_experiments(path, filt)
     else:
-        print("wrong path")
+        print("ERROR: Wrong path.")
         exit(-1)
 
+    print("\n____\nDONE.")
 
 if __name__ == "__main__": main()
 
