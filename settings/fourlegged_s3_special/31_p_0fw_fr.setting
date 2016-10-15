@@ -16,4 +16,10 @@ META_MUTATION_RATE = 0.5
 PARAM_P = 3.0
 PARAM_D = -1.0
 PARAM_M = 1.0
-SEED = ../data/seeds/31_run.seed
+SEED = ../data/exp/0_fourlegged_31_p_0fw_f/population.log
+PUSH_MODE = 0
+PUSH_BODY = 0
+PUSH_CYCLE = 100
+PUSH_STEPS = 10
+PUSH_STRENGTH = 5.0
+
