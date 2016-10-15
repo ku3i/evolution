@@ -13,15 +13,17 @@ from os.path import isfile, isdir, join
 robot_list  = ["crawler", "tadpole", "fourlegged", "humanoid", "_scrtst"]
 data_path   = "../data/exp/"
 
+# consider using 'nproc', to determine the number of usable cores
 host_domain = ".informatik.hu-berlin.de"
+#               servername cores
 server_list = [ "gruenau1"
-              , "gruenau2"
-              , "gruenau3"
-              , "gruenau4" 
-              , "gruenau5"
-              , "gruenau6"
-              , "gruenau7"
-              , "gruenau8"
+              , "gruenau2" # 16
+              , "gruenau3" # 32
+              , "gruenau4" # 32
+              , "gruenau5" # 120
+              , "gruenau6" # 120
+              , "gruenau7" # 64
+              , "gruenau8" # 64
               ]
 
 execute_commands = ["echo 'cd work/diss/evolution; nohup ./evolution.py -r {0} -n {1} -x &' > run.sh", "bash run.sh </dev/null >&/dev/null" ]
