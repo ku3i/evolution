@@ -5,7 +5,6 @@ from subprocess import Popen, PIPE
 from os import listdir
 from os.path import isfile, isdir, join
 
-robot_list      = ["crawler", "tadpole", "fourlegged", "humanoid", "_scrtst"]
 passphr         = "start"
 port_start      = 8000
 do_quit         = 0
@@ -21,13 +20,17 @@ ansi_escape = re.compile(r'\x1b[^m]*m')
 
 def get_available_experiments(robot):
 	settings_path = settings_folder + robot
+	if not isdir(settings_path):
+		print("ERROR: No such settings directory: {0}".format(settings_path))
+		exit(-1)
+	print("Setting directory is: {0}".format(settings_path))
 	settings_files = [f for f in listdir(settings_path) if isfile(join(settings_path, f))]
 	settings_files.sort()
 	return [s.replace(".setting","") for s in settings_files]
 
 def check_binary():
 	if isfile(binary): 
-		print("Binary is {0}".format(binary))
+		print("Binary is: {0}".format(binary))
 	else: 
 		print("Could not find evolution binary {0}".format(binary))
 
@@ -71,7 +74,7 @@ def main():
 	global port_start, num_conductions
 	
 	parser = argparse.ArgumentParser()
-	parser.add_argument('-r', '--robot' , default='fourlegged')
+	parser.add_argument('-r', '--robot' , default='_scrtst')
 	parser.add_argument('-n', '--number', default=num_conductions)
 	parser.add_argument('-p', '--port'  , default=port_start)
 	parser.add_argument('-x', '--nopass', action='store_true')
@@ -80,8 +83,6 @@ def main():
 	robot           = str(args.robot)
 	num_conductions = int(args.number)
 	port_start      = int(args.port)
-
-	print("selected robot is: {0}".format(robot))
 
 	check_binary()
 	experiments_available = get_available_experiments(robot)
