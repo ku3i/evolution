@@ -10,7 +10,6 @@ from subprocess import Popen, PIPE
 from os import listdir
 from os.path import isfile, isdir, join
 
-robot_list  = ["crawler", "tadpole", "fourlegged", "humanoid", "_scrtst"]
 data_path   = "../data/exp/"
 
 # consider using 'nproc', to determine the number of usable cores
