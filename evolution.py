@@ -159,7 +159,9 @@ def start_tournament(robot, experiment, port, num, dry):
 def start_all_tournaments(robot, experiments, port, num, dry_run):
 	print("\nTournaments:")
 	for e in experiments:
+		port += 1
 		start_tournament(robot, e, port, num, dry_run)
+	return port
 
 def main():
 	global port_start, num_conductions
