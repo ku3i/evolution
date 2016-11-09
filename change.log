@@ -1,6 +1,11 @@
+2016-11-09
+    + integrated tournament mode
+    + possible to load populations at start-up
+
 2016-10-18
     + improvement: removed restictions for seed file locations,
       full paths are now accepted.
+
 2016-10-16 
     + fixed bug: evolution.conf file was touched in playback mode
 

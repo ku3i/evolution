@@ -76,11 +76,6 @@ private:
     plot1D plot_rotation_z;
 };
 
-/* TODO: integrate a tournament mode:
- * let all individuals (selection) be evaluated a certain number of trials,
- * then average their fitnesses and save the best one as final result into
- * a *.seed file. */
-
 /* TODO: think about how to implement randomized starting positions to make evolved behavior
  * more robust. really, do it! */
 
