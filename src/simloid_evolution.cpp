@@ -197,25 +197,6 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 void
 Application::setup(void)
 {
-    /* Test of wrap and unwrap: TODO: move to tests */
-    double step = M_PI_4;
-    double angle = -4*M_PI;
-    double unwrapped = angle;
-    dbg_msg("Testing wrapping and unwrapping of angles");
-    for (unsigned int i = 0; i < 32; ++i)
-    {
-        double mod_angle = wrap2(angle);
-        unwrapped = unwrap(mod_angle, unwrapped);
-        assert_close(angle, unwrapped, 0.01);
-        angle += step;
-    }
-    for (unsigned int i = 0; i < 32; ++i)
-    {
-        double mod_angle = wrap2(angle);
-        unwrapped = unwrap(mod_angle, unwrapped);
-        assert_close(angle, unwrapped, 0.01);
-        angle -= step;
-    }
 }
 
 bool
