@@ -92,14 +92,18 @@ def get_number_of_max_trials(path):
 def find_experiments(path, filt, getseed, dir_level = 0):
     total = 0
     number = 0
-    dirs = [d for d in listdir(path)]
+    try:
+        dirs = [d for d in listdir(path) if isdir(path+"/"+d)]
+    except:
+        print("Error while scanning folders.")
+        return
     dirs.sort()
     for d in dirs:
         exp_path = path+"/"+d
         if not is_experiment(exp_path):
-            print
+            print(" {1} [{0}]".format(d, " " * (3*dir_level) + " + "))
             find_experiments(exp_path, filt, getseed, dir_level+1)
-            print
+            #print
             continue
 
         if filt and filt not in d:
