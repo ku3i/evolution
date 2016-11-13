@@ -194,11 +194,6 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
     return true; // all OK, continue with next
 }
 
-void
-Application::setup(void)
-{
-}
-
 bool
 Application::loop(void)
 {

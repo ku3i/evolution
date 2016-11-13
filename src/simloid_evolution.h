@@ -110,7 +110,6 @@ public:
 
     ~Application() { dbg_msg("Destroying application."); }
 
-    void setup();
     bool loop();
     void finish();
     void draw(const pref&) const;
