@@ -12,10 +12,10 @@ STRATEGY = POOL
 POPULATION_SIZE = 40
 INIT_MUTATION_RATE = 0.1
 META_MUTATION_RATE = 0.2
-INIT_POPULATION = ../data/exp/fourlegged_s0/T_fourlegged_s0_31_p_2tu_e/population.log
+SEED = ../data/exp/fourlegged_s0/T_fourlegged_s0_31_p_2tu_e/population.log
 PUSH_MODE = 0
 PUSH_BODY = 0
 PUSH_CYCLE = 100
 PUSH_STEPS = 10
-PUSH_STRENGTH = 5.0
+PUSH_STRENGTH = 2.0
 
