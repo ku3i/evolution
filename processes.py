@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # you may need to install these packages on your machine
-# sudo pip install paramiko 
+# sudo pip install paramiko
 # sudo apt-get install libffi6, libffi-dev, python2.7-dev, libssl-dev
 # sudo pip install cryptography --force-reinstall
 
@@ -14,41 +14,59 @@ host_domain = ".informatik.hu-berlin.de"
 server_list = [ "gruenau1"
               , "gruenau2"
               , "gruenau3"
-              , "gruenau4" 
+              , "gruenau4"
               , "gruenau5"
               , "gruenau6"
               , "gruenau7"
               , "gruenau8"
               ]
 
-execute_commands = ["ps -e | grep 'evolution\|simloid'"]
+def get_num_processes(ssh, verbose):
+    s = search_for(ssh, "simloid"  , verbose)
+    e = search_for(ssh, "evolution", verbose)
+    if e != 2*s:
+        print("WARNING: broken process chain.")
+    return s
 
-def search_process_on_server(server, user, pswd):
+def search_for(ssh, processname, verbose):
+    cmd = "ps -e | grep '{}'".format(processname)
+    stdin, stdout, stderr = ssh.exec_command(cmd)
+    lines = stdout.readlines() + stderr.readlines()
+
+    if verbose:
+        print("\n({1}) {0}".format(processname, len(lines)))
+        if lines > 0:
+            for line in lines:
+                print(line),
+    return len(lines)
+
+def search_process_on_server(server, user, pswd, verbose):
     print("Connecting to: {0}".format(server)),
 
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(server, username=user, password=pswd, timeout=10)
-        print("SUCCESS.")
-        for cmd in execute_commands:        
-            stdin, stdout, stderr = ssh.exec_command(cmd)
-            lines = stdout.readlines() + stderr.readlines()
-            if lines:
-                for line in lines:
-                    print(line),
-                print("__")
+
+        num = get_num_processes(ssh, verbose)
+        if not verbose:
+            print(": {0}". format(num))
+
         ssh.close()
     except:
         print("FAILED.")
 
 
-def search_all(server_list, user, pswd):
+def search_all(server_list, user, pswd, verbose):
     for server in server_list:
-        search_process_on_server(server+host_domain, user, pswd)
+        search_process_on_server(server+host_domain, user, pswd, verbose)
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v', '--verbose', action='store_true')
+    args = parser.parse_args()
+
     user = raw_input("Username: ")
     if user == "":
         print("Aborted.")
@@ -56,8 +74,7 @@ def main():
 
     pswd = getpass.getpass()
 
-    search_all(server_list, user, pswd)
+    search_all(server_list, user, pswd, args.verbose)
     print("\n____\nDONE.")
 
 if __name__ == "__main__": main()
-
