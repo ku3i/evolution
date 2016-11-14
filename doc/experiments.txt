@@ -1,34 +1,32 @@
 
 f = fast
 e = effcient 
-s = stop (from fast)
+fs = stop (from fast)
+es = stop (from efficient)
 
-0: fw f/e/s
-1: bw f/e/s
-2: tu f/e/s
-3: si f/e/s
-4: ro f/e/s
+forwards  0fw f,e [s]
+backwards 1bw f,e [s]
+turning   2tu f,e [s]
+sidewards 3si f,e [s]
+rolling   4ro f,e [s]
 
-5: hu f/e/s
-6: de f/e/s
-7: hi f/e/s
+hurdles   5hu f,e [s]  (scene=1)
+hills     6hi f,e [s]  (scene=2)
+debris    7de f,e [s]  (scene=3)
 
-every experiment is being conducted 5 times.
+Each experiment must be conducted at least 10 times.
 
-examples: 
-    bw_f_0, bw_f_1, ..., bw_f_4
-    si_e_0, si_e_1, ..., si_e_4
-    tu_s_0, tu_s_1, ..., tu_s_4
+*pdm = inital weights, all joints get same parameters
 
 
 crawler 2dof
-* forwards  f/e/s pdm
-* backwards f/e/s pdm
+* forwards  f/e   pdm
+* backwards f/e   pdm
 
 tadpole 4dof
-* forwards  f/e/s pdm
-* backwards f/e/s pdm
-* turn      f/e/s pdm
+* forwards  f/e   pdm
+* backwards f/e   pdm
+* turn      f/e   pdm
 
 fourlegged 12dof
 * forwards  f/e/s pdm
@@ -50,6 +48,5 @@ humanoid 22dof
 * debris    f/e/s fw_e
 * hills     f/e/s fw_e
 
-//TODO which seeds shall be used
 
 
