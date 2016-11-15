@@ -65,7 +65,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
     if (settings.initial_steps > 0) // trial begins with seed, then switches to evolving parameters
     {
-        control.set_seed_parameter(); // load seed controller
+        control.set_control_parameter(param0); // load seed controller
         if (verbose) dbg_msg(" %d initial + %d random steps" , settings.initial_steps, rnd_steps); // TODO remove
 
         while (data.steps < (settings.initial_steps + rnd_steps)) // wait
