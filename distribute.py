@@ -15,14 +15,14 @@ data_path   = "../data/exp/"
 # consider using 'nproc', to determine the number of usable cores
 host_domain = ".informatik.hu-berlin.de"
 #               servername cores
-server_list = [ "gruenau1"
-              , "gruenau2" # 16
-              , "gruenau3" # 32
-              , "gruenau4" # 32
-              , "gruenau5" # 120
-              , "gruenau6" # 120
-              , "gruenau7" # 64
-              , "gruenau8" # 64
+server_list = [ ("gruenau1",  16)
+              , ("gruenau2",  16)
+              , ("gruenau3",  32)
+              , ("gruenau4",  32)
+              , ("gruenau5", 120)
+              , ("gruenau6", 120)
+              , ("gruenau7",  64)
+              , ("gruenau8",  64)
               ]
 
 execute_commands = ["echo 'cd work/diss/evolution; nohup ./evolution.py -r {0} -n {1} -x &' > run.sh", "bash run.sh </dev/null >&/dev/null" ]
@@ -49,7 +49,8 @@ def start_experiment(server, robot, num, user, pswd):
 
 
 def start_all(server_list, robot, num, user, pswd):
-    for server in server_list:
+    server_list.sort(key=lambda tup: tup[1], reverse=True)
+    for server,_ in server_list:
         start_experiment(server+host_domain, robot, num, user, pswd)
 
 
