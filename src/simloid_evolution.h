@@ -58,6 +58,10 @@ public:
     , plot_rotation_z (std::min(10000u, settings.max_steps), axis_position_z , colors::brown)
     {
         sts_msg("Creating evaluation function.");
+
+        /** setting the initial controller is needed
+         * to define the symmetry for rest of the trials */
+        control.set_control_parameter(param0);
     }
     bool evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value);
     void prepare(void);
@@ -93,10 +97,12 @@ public:
     , settings(argc, argv)
     , event(em)
     , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals)
-    , seed( control::initialize_anyhow( settings.symmetric_controller
+    , control(robot)
+    , seed( control::initialize_anyhow( robot
+                                      , control
+                                      , settings.symmetric_controller
                                       , { settings.param_p, settings.param_d, settings.param_m }
                                       , settings.seed ))
-    , control(robot)
     , evaluation(settings, robot, control, seed)
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
                                                  : new Evolution(evaluation, settings, (settings.project_status == WATCH)))
@@ -122,8 +128,8 @@ private:
     Setting                    settings;
     Event_Manager&             event;
     robots::Simloid            robot;
-    control::Control_Parameter seed;
     control::Jointcontrol      control;
+    control::Control_Parameter seed;
     Evaluation                 evaluation;
     Evolution_ptr              evolution;
     uint64_t                   cycles;
