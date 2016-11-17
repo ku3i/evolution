@@ -56,6 +56,7 @@ public:
     , plot_position_xy(std::min(10000u, settings.max_steps), axis_position_xy, colors::white)
     , plot_position_z (std::min(10000u, settings.max_steps), axis_position_z , colors::white)
     , plot_rotation_z (std::min(10000u, settings.max_steps), axis_position_z , colors::brown)
+    /**TODO print out mutation rate average and std dev */
     {
         sts_msg("Creating evaluation function.");
 
@@ -107,10 +108,14 @@ public:
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
                                                  : new Evolution(evaluation, settings, (settings.project_status == WATCH)))
     , cycles(0)
-    , axis_fitness(.0, .5, .0, 2., 1., 1, "Fitness")
+    , axis_fitness(.0, .25, .0, 2., 0.5, 1, "Fitness")
     , plot1D_max_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::white)
     , plot1D_avg_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::orange)
     , plot1D_min_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::pidgin)
+    , axis_mutation(.0, .75, .0, 2., 0.5, 1, "Mutation")
+    , plot1D_max_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::white)
+    , plot1D_avg_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::orange)
+    , plot1D_min_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::pidgin)
     {
         if (not settings.visuals) do_pause.disable(); // no pause with disabled GUI
         sts_msg("Done preparing evolution.");
@@ -138,7 +143,12 @@ private:
     axes axis_fitness;
     plot1D plot1D_max_fitness;
     plot1D plot1D_avg_fitness;
-    plot1D plot1D_min_fitness; //TODO think about putting all graphics stuff to evolution_graphics class
+    plot1D plot1D_min_fitness; /**TODO think about putting all graphics stuff to evolution_graphics class*/
+
+    axes axis_mutation;
+    plot1D plot1D_max_mutation;
+    plot1D plot1D_avg_mutation;
+    plot1D plot1D_min_mutation;
 };
 
 #endif /*MAIN_H*/
