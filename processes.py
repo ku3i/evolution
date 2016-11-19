@@ -40,6 +40,12 @@ def search_for(ssh, processname, verbose):
                 print(line),
     return len(lines)
 
+def kill(ssh, processname):
+    cmd = "pkill -f -9 {}".format(processname)
+    stdin, stdout, stderr = ssh.exec_command(cmd)
+    lines = stdout.readlines() + stderr.readlines()
+
+
 def search_process_on_server(server, user, pswd, verbose):
     print("Connecting to: {0}".format(server)),
 
@@ -56,15 +62,37 @@ def search_process_on_server(server, user, pswd, verbose):
     except:
         print("FAILED.")
 
+def kill_process_on_server(server, user, pswd):
+    print("Connecting to: {0}".format(server)),
+
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(server, username=user, password=pswd, timeout=10)
+
+        kill(ssh, "evolution.py")
+        kill(ssh, "simloid")
+        kill(ssh, "evolution")
+
+
+        ssh.close()
+        print("KILLED.")
+    except:
+        print("FAILED.")
+
 
 def search_all(server_list, user, pswd, verbose):
     for server in server_list:
         search_process_on_server(server+host_domain, user, pswd, verbose)
 
+def kill_all(server_list, user, pswd):
+    for server in server_list:
+        kill_process_on_server(server+host_domain, user, pswd)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('-k', '--kill'   , action='store_true')
     args = parser.parse_args()
 
     user = raw_input("Username: ")
@@ -74,7 +102,10 @@ def main():
 
     pswd = getpass.getpass()
 
-    search_all(server_list, user, pswd, args.verbose)
+    if args.kill:
+        kill_all(server_list, user, pswd)
+    else:
+        search_all(server_list, user, pswd, args.verbose)
     print("\n____\nDONE.")
 
 if __name__ == "__main__": main()
