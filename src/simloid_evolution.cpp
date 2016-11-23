@@ -18,6 +18,10 @@ Application::draw(const pref& p) const
     plot1D_min_fitness.draw();
     plot1D_avg_fitness.draw();
     plot1D_max_fitness.draw();
+    axis_mutation.draw();
+    plot1D_min_mutation.draw();
+    plot1D_avg_mutation.draw();
+    plot1D_max_mutation.draw();
 
     evaluation.draw();
 }
@@ -65,7 +69,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
     if (settings.initial_steps > 0) // trial begins with seed, then switches to evolving parameters
     {
-        control.set_seed_parameter(); // load seed controller
+        control.set_control_parameter(param0); // load seed controller
         if (verbose) dbg_msg(" %d initial + %d random steps" , settings.initial_steps, rnd_steps); // TODO remove
 
         while (data.steps < (settings.initial_steps + rnd_steps)) // wait
@@ -199,9 +203,15 @@ Application::loop(void)
 {
     if (evolution->get_current_trial() % evolution->get_population_size() == 0)
     {
-        plot1D_max_fitness.add_sample(evolution->get_last_max_fitness());
-        plot1D_avg_fitness.add_sample(evolution->get_last_avg_fitness());
-        plot1D_min_fitness.add_sample(evolution->get_last_min_fitness());
+        const statistics_t& fstats = evolution->get_fitness_statistics();
+        plot1D_max_fitness.add_sample(fstats.max);
+        plot1D_avg_fitness.add_sample(fstats.avg);
+        plot1D_min_fitness.add_sample(fstats.min);
+
+        const statistics_t& mstats = evolution->get_mutation_statistics();
+        plot1D_max_mutation.add_sample(mstats.max);
+        plot1D_avg_mutation.add_sample(mstats.avg);
+        plot1D_min_mutation.add_sample(mstats.min);
     }
     return evolution->loop();
 }
