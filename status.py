@@ -144,7 +144,10 @@ def main():
         mkdir(lib_dir)
 
     if isdir(path):
-        find_experiments(path, filt, getseed = args.getseed)
+        try:
+            find_experiments(path, filt, getseed = args.getseed)
+        except (KeyboardInterrupt, SystemExit):
+            print("Aborted by user.")
     else:
         print("ERROR: Wrong path.")
         exit(-1)
