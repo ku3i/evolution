@@ -17,5 +17,5 @@ PUSH_BODY = 0
 PUSH_CYCLE = 100
 PUSH_STEPS = 10
 PUSH_STRENGTH = 1.0
-INIT_POPULATION = ../data/exp/fourlegged_s1/tournament/31_p_2tu_e.log
+INIT_POPULATION = ../data/exp/fourlegged_s1/tournament/31_p_2tu_f.log
 
