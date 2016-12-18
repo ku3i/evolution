@@ -14,6 +14,7 @@ num_conductions = 1
 nice = 19
 binary = "./bin/Release/evolution"
 data_path = "../data/exp/"
+conf_file = "evolution.conf"
 settings_folder = "./settings/"
 settings_file_ending = ".setting"
 tournament_prefix = "tournament/tmt_"
@@ -111,6 +112,19 @@ def conduct_all(robot, experiments, port, num, dry):
 		port += 1
 	return port
 
+def is_completed(path_list):
+	completed = True
+	for path in path_list:
+		conf = data_path+path+"/"+conf_file
+		with open(conf) as f:
+			data = f.read()
+		m = re.search("STATUS = (\d+)", data)
+		if m:
+			completed = completed and (2 == int(m.groups()[0]))
+		else:
+			print("ERROR: Did not find max. status entry in {0}".format(conf))
+			return False
+	return completed
 
 def start_tournament(robot, experiment, port, num, dry):
 	setting = "{0}{1}/{4}{2}{3}".format(settings_folder, robot, experiment, settings_file_ending, tournament_prefix)
@@ -126,12 +140,16 @@ def start_tournament(robot, experiment, port, num, dry):
 		return
 
 	if isdir(data_path+tournament):
-		if is_up_to_date(tournament, expfolderlist):
+		if not is_completed(expfolderlist):
+			print(" + {0} NOT READY. SKIPPED.".format(tournament))
+			return
+		elif is_up_to_date(tournament, expfolderlist):
 			print(" + {0} DONE. SKIPPED.".format(tournament))
 			return
 		else:
 			print(" + {0} OUTDATED -> REFRESHING.".format(tournament))
-			clean_folder(data_path+tournament)
+			if not dry:
+				clean_folder(data_path+tournament)
 	else:
 		print(" > {0}".format(tournament)),
 
@@ -196,6 +214,7 @@ def main():
 	port = port_start
 	for num in range(num_conductions):
 		port = conduct_all(robot, experiments_available, port, num, dry_run)
+
 
 	start_all_tournaments(robot, experiments_available, port, num_conductions, dry_run)
 
