@@ -156,16 +156,12 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         ++data.steps;
 
         /* drop penalty */
-        if (data.dropped)
+        if (data.dropped or data.out_of_track or data.stopped)
         {
-            if (verbose) sts_msg(" %04d/%04d Dropped.", data.steps, settings.max_steps);
-            break;
-        }
-
-        /* out-of-track penalty */
-        if (data.out_of_track)
-        {
-            if (verbose) sts_msg(" %04d/%04d Out of track.", data.steps, settings.max_steps);
+            if (verbose) sts_msg(" %04d/%04d %s%s%s", data.steps, settings.max_steps
+                                                    , data.dropped      ? "[Dropped]"      : ""
+                                                    , data.out_of_track ? "[Out of track]" : ""
+                                                    , data.stopped      ? "[Stopped]"      : "" );
             break;
         }
 
