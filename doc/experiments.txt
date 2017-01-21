@@ -22,11 +22,14 @@ Each experiment must be conducted at least 10 times.
 crawler 2dof
 * forwards  f/e   pdm
 * backwards f/e   pdm
+* stopping omitted intentionally
+
 
 tadpole 4dof
 * forwards  f/e   pdm
 * backwards f/e   pdm
 * turn      f/e   pdm
+* stopping omitted intentionally
 
 fourlegged 12dof
 * forwards  f/e/s pdm
