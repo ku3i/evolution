@@ -54,7 +54,7 @@ def find_experiments(path, filt, dir_level = 0):
         if result:
             exp_list.append(exp_path.replace(exp_dir+"/", ""))
 
-        print("{2}{0:32} {1:3}".format(d, str(len(exp_list)) if result else "---", dir_level*"\t"))
+        print("{2}{0:32} {1:3}".format(d, str(len(exp_list)-1) if result else "---", dir_level*"\t"))
         number += 1
 
 
@@ -75,7 +75,7 @@ def watch(expname, port, dry = False):
 
 def show_experiments():
     for idx,expname in enumerate(exp_list):
-        print("{0:3} {1}".format(idx+1, expname))
+        print("{0:3} {1}".format(idx, expname))
 
 def main():
     parser = argparse.ArgumentParser()
