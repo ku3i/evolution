@@ -80,7 +80,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                 continue;
             }
 
-            control.loop();
+            control.execute_cycle();
             if (!robot.update())
             {
                 sts_msg("Evaluation gets no response from Simloid. Sending quit signal.");
@@ -115,7 +115,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
             continue;
         }
 
-        control.loop();
+        control.execute_cycle();
 
         // TODO make the pushes have all same AUC (area under curve) smaller pushes have longer duration
         if (push_on)
