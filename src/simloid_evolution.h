@@ -1,23 +1,10 @@
-#ifndef MAIN_H
-#define MAIN_H
+/*---------------------------------+
+ | Matthias Kubisch                |
+ | kubisch@informatik.hu-berlin.de |
+ | July 2017                       |
+ +---------------------------------*/
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstdarg>
-#include <unistd.h>
-
-#include <ctime>
-#include <cmath>
-#include <cfloat>
-#include <cstring>
-#include <cerrno>
-#include <clocale>
-#include <sys/time.h>
-#include <signal.h>
-#include <vector>
-#include <memory>
-
-#include <common/application_interface.h>
+#include <common/application_base.h>
 #include <common/event_manager.h>
 #include <common/log_messages.h>
 #include <common/basic.h>
@@ -44,7 +31,7 @@ extern GlobalFlag do_pause;
 class Evaluation : public virtual Evaluation_Interface
 {
 public:
-    Evaluation(const Setting &settings, robots::Simloid &robot, control::Jointcontrol& control, control::Control_Parameter& param0)
+    Evaluation(const Setting& settings, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0)
     : settings(settings)
     , robot(robot)
     , control(control)
@@ -88,15 +75,14 @@ private:
 /* TODO: think about how to implement randomized starting positions to make evolved behavior
  * more robust. really, do it! */
 
-class Application : public Application_Interface, public Application_Base
+class Application : public Application_Base
 {
     typedef std::unique_ptr<Evolution> Evolution_ptr;
 
 public:
-    Application(int argc, char **argv, Event_Manager &em)
-    : Application_Base("Evolution", 640, 640)
+    Application(int argc, char** argv, Event_Manager& em)
+    : Application_Base(em, "Evolution", 640, 640)
     , settings(argc, argv)
-    , event(em)
     , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals)
     , control(robot)
     , seed( control::initialize_anyhow( robot
@@ -107,7 +93,6 @@ public:
     , evaluation(settings, robot, control, seed)
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
                                                  : new Evolution(evaluation, settings, (settings.project_status == WATCH)))
-    , cycles(0)
     , axis_fitness(.0, .25, .0, 2., 0.5, 1, "Fitness")
     , plot1D_max_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::white)
     , plot1D_avg_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::orange)
@@ -127,17 +112,14 @@ public:
     void finish();
     void draw(const pref&) const;
     bool visuals_enabled(void) { return settings.visuals; }
-    uint64_t get_cycle_count(void) const { return cycles; }
 
 private:
     Setting                    settings;
-    Event_Manager&             event;
     robots::Simloid            robot;
     control::Jointcontrol      control;
     control::Control_Parameter seed;
     Evaluation                 evaluation;
     Evolution_ptr              evolution;
-    uint64_t                   cycles;
 
     /* Graphics */
     axes axis_fitness;
@@ -151,5 +133,4 @@ private:
     plot1D plot1D_min_mutation;
 };
 
-#endif /*MAIN_H*/
 
