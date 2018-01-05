@@ -11,7 +11,7 @@ port_start      = 8000
 def_number      = 10
 
 nice = 19
-binary = "./bin/Release/evolution"
+binary = "./bin/Release/evolution-1.0.1"
 data_path = "../data/exp/"
 settings_folder = "./settings/"
 settings_file_ending = ".setting"

@@ -11,7 +11,7 @@ from os.path import isfile, isdir
 
 exp_dir   = "../data/exp"
 conf_file = "evolution.conf"
-binary = "./bin/Release/evolution"
+binary = "./bin/Release/evolution-1.0.1"
 exp_list = []
 port0 = 8000
 
