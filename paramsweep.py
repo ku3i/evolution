@@ -105,14 +105,14 @@ def main():
 	idx = 0
 	fout = open("results.log", "w+")	
 
-	for ps in np.linspace(5, 50, num=args.number, dtype=int):
+	for ps in np.linspace(5, 50, num=args.number):
 		for mr in np.logspace(-3, 0, num=args.number):#1.0/(1.5**np.arange(10)):
-			print("Conducting with mutation rate {0} and popsize {1}".format(mr,ps))
-			conduct(robot, experiment, port_start, idx, args.dry, add_settings=(ps,mr))
+			print("Conducting with mutation rate {0} and popsize {1}".format(mr,int(ps)))
+			conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
 			# get fitness
 			if args.dry:
 				continue
-			line = "{0} {1} {2}".format(ps,mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
+			line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
 			idx += 1
 			port_start += 1
 			fout.write(line)
