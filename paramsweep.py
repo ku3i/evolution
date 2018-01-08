@@ -8,7 +8,7 @@ from math import ceil
 import numpy as np
 
 port_start      = 8000
-def_number      = 10
+def_number      = 20
 
 nice = 19
 binary = "./bin/Release/evolution-1.0.1"
@@ -103,9 +103,8 @@ def main():
 
 	experiment = "31_p_0fw_e_param_sweep"
 	idx = 0
-	fout = open("results.log", "w+")	
 
-	for ps in np.linspace(5, 50, num=args.number):
+	for ps in np.linspace(5, 100, num=args.number):
 		for mr in np.logspace(-3, 0, num=args.number):#1.0/(1.5**np.arange(10)):
 			print("Conducting with mutation rate {0} and popsize {1}".format(mr,int(ps)))
 			conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
@@ -115,10 +114,8 @@ def main():
 			line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
 			idx += 1
 			port_start += 1
-			fout.write(line)
-			fout.flush()
-			
-	fout.close()
+			with open("results.log", "a+") as fout:
+				fout.write(line)
 
 	print("\n____\nDONE.\n")
 
