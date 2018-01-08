@@ -57,7 +57,7 @@ def conduct(robot, experiment, port, num, dry, add_settings = ()):
 
 	if isdir(data_path+expname):
 		print(" + {0} DONE. SKIPPED.".format(expname))
-		return
+		return False
 	else:
 		print(" > {0}".format(expname)),
 
@@ -71,9 +71,15 @@ def conduct(robot, experiment, port, num, dry, add_settings = ()):
 			out_file.write(ansi_escape.sub('', out))
 		with open(output_path + "stderr.txt", "w") as err_file:
 			err_file.write(ansi_escape.sub('', err))
-		print "OK." if exitcode==0 else "FAILED. Code {0}".format(exitcode)
+		if exitcode==0:
+			print("OK.")
+			return True
+		else:
+			print("FAILED. Code {0}".format(exitcode))
+			return False
 	else:
 		print(command)
+		return False
 
 
 def tail(filename):
@@ -105,17 +111,18 @@ def main():
 	idx = 0
 
 	for ps in np.linspace(5, 100, num=args.number):
-		for mr in np.logspace(-3, 0, num=args.number):#1.0/(1.5**np.arange(10)):
+		for mr in np.logspace(-3, 0, num=args.number):
 			print("Conducting with mutation rate {0} and popsize {1}".format(mr,int(ps)))
-			conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
+			res = conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
 			# get fitness
 			if args.dry:
 				continue
 			line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
 			idx += 1
 			port_start += 1
-			with open("results.log", "a+") as fout:
-				fout.write(line)
+			if res:
+				with open("results.log", "a+") as fout:
+					fout.write(line)
 
 	print("\n____\nDONE.\n")
 
