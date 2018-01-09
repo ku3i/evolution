@@ -104,6 +104,7 @@ def main():
 	parser.add_argument('-p', '--port'  , default=port_start)
 	parser.add_argument('-d', '--dry'   , action='store_true')
 	parser.add_argument('-n', '--number', default=def_number)
+	parser.add_argument('-m', '--meta'  , default=0.5)
 	args = parser.parse_args()
 
 	robot           = str(args.robot)
@@ -113,11 +114,12 @@ def main():
 
 	experiment = "31_p_0fw_e_param_sweep"
 	idx = 0
+	me = args.meta
 
 	for ps in np.linspace(5, 100, num=args.number):
 		for mr in np.logspace(-3, 0, num=args.number):
-			print("Conducting with mutation rate {0} and popsize {1}".format(mr,int(ps)))
-			res = conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
+			print("Conducting with mutation rate {0} and popsize {1} and meta {2}".format(mr,int(ps),me))
+			res = conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr,me))
 			port_start += 1
 			# get fitness
 			if args.dry:
