@@ -66,11 +66,15 @@ def conduct(robot, experiment, port, num, dry, add_settings = ()):
 
 	if not dry:
 		output_path = "{0}{1}/".format(data_path, expname)
-		exitcode, out, err = execute_command(command)
-		with open(output_path + "stdout.txt", "w") as out_file:
-			out_file.write(ansi_escape.sub('', out))
-		with open(output_path + "stderr.txt", "w") as err_file:
-			err_file.write(ansi_escape.sub('', err))
+		try:
+			exitcode, out, err = execute_command(command)
+			with open(output_path + "stdout.txt", "w") as out_file:
+				out_file.write(ansi_escape.sub('', out))
+			with open(output_path + "stderr.txt", "w") as err_file:
+				err_file.write(ansi_escape.sub('', err))
+		except:
+			print("ERROR")
+
 		if exitcode==0:
 			print("OK.")
 			return True
@@ -114,15 +118,15 @@ def main():
 		for mr in np.logspace(-3, 0, num=args.number):
 			print("Conducting with mutation rate {0} and popsize {1}".format(mr,int(ps)))
 			res = conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr))
+			port_start += 1
 			# get fitness
 			if args.dry:
 				continue
-			line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
-			idx += 1
-			port_start += 1
 			if res:
+				line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
 				with open("results.log", "a+") as fout:
 					fout.write(line)
+			idx += 1
 
 	print("\n____\nDONE.\n")
 
