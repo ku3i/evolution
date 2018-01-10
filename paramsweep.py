@@ -117,10 +117,10 @@ def main():
 	me = args.meta
 
 	for ps in np.linspace(5, 100, num=args.number):
-		for mr in np.logspace(-3, 0, num=args.number):
+		for mr in [round(x,10) for x in np.logspace(-3, 0, num=args.number)]:
 			print("Conducting with mutation rate {0} and popsize {1} and meta {2}".format(mr,int(ps),me))
 			res = conduct(robot, experiment, port_start, idx, args.dry, add_settings=(int(ps),mr,me))
-			port_start += 1
+			port_start += 1 if port_start != 8089 else 2
 			# get fitness
 			if args.dry:
 				continue
