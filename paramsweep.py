@@ -34,8 +34,8 @@ def write_locked(fname, op, line):
 
 	fout.write(line)
 	fout.flush()
-	fout.close()
 	fcntl.flock(fout, fcntl.LOCK_UN)
+	fout.close()
 
 
 def check_binary():
