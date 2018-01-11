@@ -12,7 +12,7 @@
 DEFINE_GLOBALS()
 
 void
-Application::draw(const pref& p) const
+Application::draw(const pref& /*p*/) const
 {
     axis_fitness.draw();
     plot1D_min_fitness.draw();
@@ -47,6 +47,23 @@ void Evaluation::draw(void) const
     plot_rotation_z.draw();
 }
 
+void
+Evaluation::logdata(uint32_t cycles, uint32_t preparation_cycles = 0)
+{
+    /* drawing */
+    plot_position_xy.add_sample(robot.get_avg_position().x,
+                                robot.get_avg_position().y);
+
+    plot_position_z.add_sample(robot.get_avg_position().z);
+    plot_rotation_z.add_sample(robot.get_avg_rotation()/M_PI);
+
+    if (logger.is_enabled())
+        logger.log("%lld %s"// use %+e
+                  , static_cast<int64_t>(cycles - preparation_cycles)
+                  , robot_log.log()
+                  );
+}
+
 bool
 Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value)
 {
@@ -69,10 +86,11 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
     if (settings.initial_steps > 0) // trial begins with seed, then switches to evolving parameters
     {
+        uint64_t max_initial_steps = settings.initial_steps + rnd_steps;
         control.set_control_parameter(param0); // load seed controller
-        if (verbose) dbg_msg(" %d initial + %d random steps" , settings.initial_steps, rnd_steps); // TODO remove
+        if (verbose) dbg_msg(" %u initial + %u random steps" , settings.initial_steps, rnd_steps); // TODO remove
 
-        while (data.steps < (settings.initial_steps + rnd_steps)) // wait
+        while (data.steps < max_initial_steps) // wait
         {
             if (do_quit.status()) return false; // abort
             else if (do_pause.status()) {
@@ -88,14 +106,8 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                 return false; // abort
             }
 
+            logdata(data.steps, max_initial_steps);
             ++data.steps;
-
-            /* drawing */
-            plot_position_xy.add_sample(robot.get_avg_position().x,
-                                        robot.get_avg_position().y);
-
-            plot_position_z.add_sample(robot.get_avg_position().z);
-            plot_rotation_z.add_sample(robot.get_avg_rotation()/M_PI);
 
         } // end while
 
@@ -147,12 +159,13 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
         if (!robot.update())
         {
-            sts_msg("Evaluation gets no response from Simloid. Sending quit signal.");
+            sts_msg("Evaluation got no response from Simloid. Sending quit signal.");
             quit();
             return false; // abort
         }
 
         fitness_function->step(data);
+        logdata(data.steps);
         ++data.steps;
 
         /* drop penalty */
@@ -176,15 +189,6 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         {
             if (verbose) sts_msg(" %04d/%04d Time's up.", data.steps, settings.max_steps);
         }
-
-
-        /* drawing */
-        plot_position_xy.add_sample(robot.get_avg_position().x,
-                                    robot.get_avg_position().y);
-
-        plot_position_z.add_sample(robot.get_avg_position().z);
-        plot_rotation_z.add_sample(robot.get_avg_rotation()/M_PI);
-
     }
 
     fitness_function->finish(data);

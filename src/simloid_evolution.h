@@ -10,6 +10,7 @@
 #include <common/basic.h>
 
 #include <robots/simloid.h>
+#include <robots/simloid_log.h>
 #include <control/jointcontrol.h>
 #include <control/controlparameter.h>
 
@@ -31,13 +32,15 @@ extern GlobalFlag do_pause;
 class Evaluation : public virtual Evaluation_Interface
 {
 public:
-    Evaluation(const Setting& settings, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0)
+    Evaluation(const Setting& settings, Datalog& logger, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0)
     : settings(settings)
+    , logger(logger)
     , robot(robot)
     , control(control)
     , param0(param0)
     , fitness_function(assign_fitness(robot, settings))
     , verbose(settings.visuals)
+    , robot_log(robot)
     , axis_position_xy(.5, -.50, .0, 1., 1.0, 0, "xy-position")
     , axis_position_z(-.5, -.25, .0, 1., 0.5, 1,  "z-position")
     , plot_position_xy(std::min(10000u, settings.max_steps), axis_position_xy, colors::white)
@@ -54,14 +57,19 @@ public:
     bool evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value);
     void prepare(void);
     void draw(void) const;
+    void logdata(uint32_t, uint32_t);
 
 private:
     const Setting&              settings;
+    Datalog&                    logger;
     robots::Simloid&            robot;
     control::Jointcontrol&      control;
     control::Control_Parameter& param0;
     Fitness_ptr                 fitness_function;
     const bool                  verbose;
+
+    /*logs*/
+    robots::Simloid_Log         robot_log;
 
     /* drawing */
     axes axis_position_xy;
@@ -81,7 +89,7 @@ class Application : public Application_Base
 
 public:
     Application(int argc, char** argv, Event_Manager& em)
-    : Application_Base(em, "Evolution", 640, 640)
+    : Application_Base(argc, argv, em, "Evolution", 640, 640)
     , settings(argc, argv)
     , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals)
     , control(robot)
@@ -90,7 +98,7 @@ public:
                                       , settings.symmetric_controller
                                       , { settings.param_p, settings.param_d, settings.param_m }
                                       , settings.seed ))
-    , evaluation(settings, robot, control, seed)
+    , evaluation(settings, logger, robot, control, seed)
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
                                                  : new Evolution(evaluation, settings, (settings.project_status == WATCH)))
     , axis_fitness(.0, .25, .0, 2., 0.5, 1, "Fitness")

@@ -2,7 +2,7 @@
 
 # Evolution experiment launcher for watching
 # + lists available experiments by filter arument -f
-# + enumerates and ask for index number of experiment to be watch
+# + enumerates and asks for index number of experiment to be watched
 
 import re, argparse, shlex
 from subprocess import Popen
