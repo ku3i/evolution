@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import re, sys, shlex, argparse
+import re, sys, shlex, argparse, fcntl, time
 from subprocess import Popen, PIPE
 from os import listdir, makedirs, unlink
 from os.path import isfile, isdir, join, getmtime, exists
@@ -47,19 +47,19 @@ def override_settings(filename, setlist = ()):
 
 
 def conduct(robot, experiment, port, num, dry, add_settings = ()):
-	setting = "{0}{1}/{2}{3}".format(settings_folder, robot, experiment, settings_file_ending)
-	if not dry:
-		setting = override_settings(setting, add_settings)
-
 	expname = "{0}/{2}_{0}_{1}".format(robot, experiment, num)
-	command = "nice -n {4} {0} -n {1} -s {2} -p {3} -b"\
-		.format(binary, expname, setting, port, nice)
-
 	if isdir(data_path+expname):
 		print(" + {0} DONE. SKIPPED.".format(expname))
 		return False
 	else:
 		print(" > {0}".format(expname)),
+
+	setting = "{0}{1}/{2}{3}".format(settings_folder, robot, experiment, settings_file_ending)
+	if not dry:
+		setting = override_settings(setting, add_settings)
+
+	command = "nice -n {4} {0} -n {1} -s {2} -p {3} -b"\
+		.format(binary, expname, setting, port, nice)
 
 	if not exists(data_path+robot):
 		makedirs(data_path+robot)
@@ -96,6 +96,25 @@ def tail(filename):
 		return last
 
 
+def write_locked(fname, line):
+	fout = open(fname, "a+")
+	while True:
+		try:
+			fcntl.flock(fout, fcntl.LOCK_EX | fcntl.LOCK_NB)
+			break
+		except IOError as e:
+			# raise on unrelated IOErrors
+			if e.errno != errno.EAGAIN:
+				raise
+			else:
+				time.sleep(0.25)
+
+	fout.write(line)
+	fout.flush()
+	fout.close()
+	fcntl.flock(fout, fcntl.LOCK_UN)
+
+
 def main():
 	global port_start
 
@@ -126,8 +145,8 @@ def main():
 				continue
 			if res:
 				line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
-				with open("results.log", "a+") as fout:
-					fout.write(line)
+				write_locked("results.log", line)
+
 			idx += 1
 
 	print("\n____\nDONE.\n")
