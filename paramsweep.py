@@ -19,6 +19,25 @@ settings_file_ending = ".setting"
 ansi_escape = re.compile(r'\x1b[^m]*m')
 
 
+def write_locked(fname, op, line):
+	fout = open(fname, op)
+	while True:
+		try:
+			fcntl.flock(fout, fcntl.LOCK_EX | fcntl.LOCK_NB)
+			break
+		except IOError as e:
+			# raise on unrelated IOErrors
+			if e.errno != errno.EAGAIN:
+				raise
+			else:
+				time.sleep(0.25)
+
+	fout.write(line)
+	fout.flush()
+	fout.close()
+	fcntl.flock(fout, fcntl.LOCK_UN)
+
+
 def check_binary():
 	if isfile(binary):
 		print("Binary is: {0}".format(binary))
@@ -39,8 +58,7 @@ def override_settings(filename, setlist = ()):
 		with open(filename, "r") as f:
 			data = f.read().format(*setlist)
 			newfile = filename+".tmp"
-			with open(newfile, "w+") as n:
-				n.write(data)
+			write_locked(newfile, "w+", data)
 			return newfile
 	else:
 		return filename
@@ -96,25 +114,6 @@ def tail(filename):
 		return last
 
 
-def write_locked(fname, line):
-	fout = open(fname, "a+")
-	while True:
-		try:
-			fcntl.flock(fout, fcntl.LOCK_EX | fcntl.LOCK_NB)
-			break
-		except IOError as e:
-			# raise on unrelated IOErrors
-			if e.errno != errno.EAGAIN:
-				raise
-			else:
-				time.sleep(0.25)
-
-	fout.write(line)
-	fout.flush()
-	fout.close()
-	fcntl.flock(fout, fcntl.LOCK_UN)
-
-
 def main():
 	global port_start
 
@@ -145,7 +144,7 @@ def main():
 				continue
 			if res:
 				line = "{0} {1} {2}".format(int(ps),mr,tail(data_path+robot+"/"+str(idx)+"_"+robot+"_"+experiment+"/evolution.log"))
-				write_locked("results.log", line)
+				write_locked("results.log", "a+", line)
 
 			idx += 1
 
