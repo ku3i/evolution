@@ -21,7 +21,7 @@ from common import *
 
 columns = ['max', 'avg', 'min']
 
-data_path   = "../data/exp"
+data_path   = "../data/exp/"
 logfile     = "evolution.log"
 fitness_log = "fitness.log"
 pdfname     = "record.pdf"
@@ -61,20 +61,11 @@ def prepare_figure():
 
 
 def conduct(robot, expname, port, dry):    
-    command = "nice -n {3} {0} --watch {1} --port {2} --blind --enable_logging --outfile {4}/{1}/data.log"\
+    command = "nice -n {3} {0} --watch {1} --port {2} --blind --enable_logging --outfile {4}{1}/data.log"\
         .format(binary, expname, port, nice, data_path)
 
-    if isdir(data_path+expname):
-        print(" + {0} DONE. SKIPPED.".format(expname))
-        return
-    else:
-        print(" > {0}".format(expname)),
-
-    if not exists(data_path+robot):
-        makedirs(data_path+robot)
-
     if not dry:
-        output_path = "{0}/{1}/".format(data_path, expname)
+        output_path = "{0}{1}/".format(data_path, expname)
         exitcode, out, err = execute_command(command)
         with open(output_path + "stdout.txt", "w") as out_file:
             out_file.write(ansi_escape.sub('', out))
@@ -99,7 +90,7 @@ def main():
 
     robot = str(args.robot)
     target = lambda: None
-    target.path = data_path +"/"+ robot
+    target.path = data_path + robot
     target.robot = robot
 
     if not isdir(target.path):
@@ -115,7 +106,7 @@ def main():
         print("{0} = {1}".format(r, index_list))
 
         best,_,_ = get_best_worst_median(r, index_list)
-        best_exp_name = r.format(best).replace(data_path+"/","").rstrip("/")
+        best_exp_name = r.format(best).replace(data_path,"").rstrip("/")
 
         print(best_exp_name)
 
