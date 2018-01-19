@@ -12,7 +12,7 @@ do_quit         = 0
 num_conductions = 1
 
 nice = 19
-binary = "./bin/Release/evolution-1.0.1"
+binary = "./bin/Release/evolution"
 data_path = "../data/exp/"
 conf_file = "evolution.conf"
 settings_folder = "./settings/"

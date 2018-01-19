@@ -1,3 +1,6 @@
+2018-01-19 : Release 1.1.0
+	+ support for recording frames and simloid pausing
+
 2018-01-05 : Release 1.0.1
 	+ minor refactorings, mostly app-system
 
