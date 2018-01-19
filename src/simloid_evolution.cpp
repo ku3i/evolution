@@ -62,6 +62,9 @@ Evaluation::logdata(uint32_t cycles, uint32_t preparation_cycles = 0)
                   , static_cast<int64_t>(cycles - preparation_cycles)
                   , robot_log.log()
                   );
+
+    if (logger.is_video_included())
+        robot.record_next_frame();
 }
 
 bool

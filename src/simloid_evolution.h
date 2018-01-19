@@ -53,6 +53,10 @@ public:
         /** setting the initial controller is needed
          * to define the symmetry for rest of the trials */
         control.set_control_parameter(param0);
+
+        /* prepare frame recording */
+        if (logger.is_video_included())
+            robot.record_next_frame();
     }
     bool evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value);
     void prepare(void);
@@ -118,6 +122,7 @@ public:
 
     bool loop();
     void finish();
+    void paused(void) { robot.idle(); }
     void draw(const pref&) const;
     bool visuals_enabled(void) { return settings.visuals; }
 
