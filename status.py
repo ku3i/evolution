@@ -113,8 +113,8 @@ def find_experiments(path, filt, getseed, dir_level = 0):
         max_trials = get_number_of_max_trials(exp_path)
         cur_trials = get_number_of_cur_trials(exp_path)
         result = int(cur_trials*100.0/max_trials)
-        avg_f = get_avg_fitness(exp_path)
-        print("{5}{0:32} {1:3d}% ({2:6d}/{3:6d}) {4} f:{6: 7.3f}".format(d, result, cur_trials, max_trials, "OK." if result==100 else "", dir_level*"\t", avg_f)),
+        avgf,maxf = get_avg_fitness(exp_path)
+        print("{5}{0:32} {1:3d}% ({2:6d}/{3:6d}) {4} f:{6: 7.3f} ({7: 7.3f})".format(d, result, cur_trials, max_trials, "OK." if result==100 else "", dir_level*"\t", avgf,maxf)),
         number += 1
         total += result
 
@@ -135,14 +135,10 @@ def get_avg_fitness(path):
     if not isfile(path+"/"+fit_log):
         return 0.0
     with open(path+"/"+fit_log) as f:
-        lines = f.readlines()
-    avg = 0.0
-    for l in lines:
-        try:
-            avg += float(l)
-        except:
-            print("ERROR in CONVERSION: " + l)
-    return avg/len(lines) if len(lines) > 0 else 0.0
+        lines = [float(x) for x in f.readlines()]
+    avgf = sum(lines)/len(lines) if len(lines) > 0 else 0.0
+    maxf = max(lines)
+    return avgf,maxf
 
 
 def main():
