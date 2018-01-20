@@ -8,6 +8,7 @@ exp_dir   = "../data/exp"
 lib_dir   = "../data/lib"
 conf_file = "evolution.conf"
 log_file  = "evolution.log"
+fit_log   = "fitness.log"
 pop_file  = "population.log"
 seed_fend = ".dat"
 
@@ -112,7 +113,8 @@ def find_experiments(path, filt, getseed, dir_level = 0):
         max_trials = get_number_of_max_trials(exp_path)
         cur_trials = get_number_of_cur_trials(exp_path)
         result = int(cur_trials*100.0/max_trials)
-        print("{5}{0:32} {1:3d}% ({2:6d}/{3:6d}) {4}".format(d, result, cur_trials, max_trials, "OK." if result==100 else "", dir_level*"\t")),
+        avg_f = get_avg_fitness(exp_path)
+        print("{5}{0:32} {1:3d}% ({2:6d}/{3:6d}) {4} f:{6: 7.3f}".format(d, result, cur_trials, max_trials, "OK." if result==100 else "", dir_level*"\t", avg_f)),
         number += 1
         total += result
 
@@ -127,6 +129,20 @@ def find_experiments(path, filt, getseed, dir_level = 0):
     if number > 0:
         print("{1}{0}".format("-"*37, dir_level*"\t"))
         print("{3}{0:32} {1:3d}% {2}".format("Total: ", total/number, "COMPLETE." if int(total/number)==100 else "", dir_level*"\t"))
+
+
+def get_avg_fitness(path):
+    if not isfile(path+"/"+fit_log):
+        return 0.0
+    with open(path+"/"+fit_log) as f:
+        lines = f.readlines()
+    avg = 0.0
+    for l in lines:
+        try:
+            avg += float(l)
+        except:
+            print("ERROR in CONVERSION: " + l)
+    return avg/len(lines) if len(lines) > 0 else 0.0
 
 
 def main():
