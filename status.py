@@ -136,9 +136,7 @@ def get_avg_fitness(path):
         return 0.0
     with open(path+"/"+fit_log) as f:
         lines = [float(x) for x in f.readlines()]
-    avgf = sum(lines)/len(lines) if len(lines) > 0 else 0.0
-    maxf = max(lines)
-    return avgf,maxf
+    return (sum(lines)/len(lines), max(lines)) if len(lines) > 0 else (0.0,0.0)
 
 
 def main():
