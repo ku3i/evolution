@@ -16,7 +16,7 @@ import numpy
 from os import listdir, makedirs
 from os.path import isfile, isdir, exists
 from tableau20 import tableau20
-
+import subprocess
 from common import *
 
 columns = ['max', 'avg', 'min']
@@ -47,22 +47,10 @@ def prepare_figure():
     ax.get_xaxis().tick_bottom()
 
 
-#def read_csv(filename):
-#    return pd.read_csv(filename, sep=' ', header=None, names=columns)
-	
-#	plt.plot(evodict['worst' ], color=tableau20[1], lw=0.5 )
-#	plt.plot(evodict['best'  ], color=tableau20[0], lw=0.5 )
-#	plt.plot(evodict['median'], color=tableau20[2], lw=0.5 )
-
-#	plt.legend(['worst','best','median'], loc="lower right")
-	#plt.show()
-#	plt.savefig("{0}_{1}".format(name.format("").rstrip("/").lstrip("_"), pdfname), bbox_inches="tight")
-#	plt.clf()
-
-
-def conduct(robot, expname, port, dry):    
-    command = "nice -n {3} {0} --watch {1} --port {2} --blind --enable_logging --outfile {4}{1}/data.log"\
-        .format(binary, expname, port, nice, data_path)
+def conduct(robot, expname, port, dry = False, include_video = False):
+    cmd_iv = "--include_video --no_pause" if include_video else "--blind"
+    command = "nice -n {3} {0} --watch {1} --port {2} --enable_logging --outfile {4}{1}/data.log {5}"\
+        .format(binary, expname, port, nice, data_path, cmd_iv)
 
     if not dry:
         output_path = "{0}{1}/".format(data_path, expname)
@@ -79,7 +67,8 @@ def conduct(robot, expname, port, dry):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--robot')
-    parser.add_argument('-d', '--dry', action="store_true", default=False)
+    parser.add_argument('-d', '--dry'          , action="store_true", default=False)
+    parser.add_argument('-i', '--include_video', action="store_true", default=False)
     args = parser.parse_args()
 
     if args.robot==None:
@@ -110,7 +99,14 @@ def main():
 
         print(best_exp_name)
 
-        conduct(robot, best_exp_name, port, args.dry)
+        conduct(robot, best_exp_name, port, args.dry, args.include_video)
+
+		if args.include_video:
+            directory = "data/"+robot
+            if not exists(directory):
+                makedirs(directory)
+            subprocess.call(['./ppm2avi.sh {0}'.format(best_exp_name)], shell=True)
+
         port+=1
 
 

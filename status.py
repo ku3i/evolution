@@ -133,7 +133,7 @@ def find_experiments(path, filt, getseed, dir_level = 0):
 
 def get_avg_fitness(path):
     if not isfile(path+"/"+fit_log):
-        return 0.0
+        return (0.0,0.0)
     with open(path+"/"+fit_log) as f:
         lines = [float(x) for x in f.readlines()]
     return (sum(lines)/len(lines), max(lines)) if len(lines) > 0 else (0.0,0.0)
