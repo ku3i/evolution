@@ -97,7 +97,9 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         {
             if (do_quit.status()) return false; // abort
             else if (do_pause.status()) {
-                usleep(100000); // 100 ms
+                usleep(10000); // 10 ms
+                robot.idle();
+                printf("halted\r");
                 continue;
             }
 
@@ -126,7 +128,9 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         /* if evolution has been paused or aborted */
         if (do_quit.status()) return false; // abort
         else if (do_pause.status()) {
-            usleep(100000); // 100 ms
+            usleep(10000); // 10 ms
+            robot.idle();
+            printf("halted\r");
             continue;
         }
 
