@@ -27,13 +27,19 @@ Application::draw(const pref& /*p*/) const
 }
 
 void
-Evaluation::prepare(void)
+Evaluation::prepare_generation(unsigned cur_generation, unsigned max_generation)
 {
-    /*TODO:
-        reset the robot
-        set new random position
-        save state
-    */
+    if (!settings.random_mode) return;
+    if (0 == cur_generation) return;
+
+    if (settings.strategy != "GENERATION")
+        err_msg(__FILE__, __LINE__, "Random-Mode currently not implemented for pool-based strategies.");
+    /** TODO: think about implementing random-mode for pool-based */
+
+    double rnd_amplitude = (double) cur_generation / max_generation;
+    dbg_msg("Preparing new randomized model for generation %u with amplitude %lf", cur_generation, rnd_amplitude);
+    robot.randomize_model(rnd_amplitude);
+
     return;
 }
 

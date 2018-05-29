@@ -59,7 +59,7 @@ public:
             robot.record_next_frame();
     }
     bool evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value);
-    void prepare(void);
+    void prepare_generation(unsigned cur_generation, unsigned max_generation);
     void draw(void) const;
     void logdata(uint32_t, uint32_t);
 
