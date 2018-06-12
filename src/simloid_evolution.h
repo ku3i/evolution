@@ -84,8 +84,6 @@ private:
     plot1D plot_rotation_z;
 };
 
-/* TODO: think about how to implement randomized starting positions to make evolved behavior
- * more robust. really, do it! */
 
 class Application : public Application_Base
 {

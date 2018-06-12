@@ -6,8 +6,24 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Release">
+			<Target title="simloid_evolution">
 				<Option output="bin/Release/evolution" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-Weffc++" />
+					<Add option="-Wextra" />
+					<Add option="-Wall" />
+					<Add option="-std=c++11" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="motor_params_evo">
+				<Option output="motor_params" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -45,8 +61,18 @@
 			<Add directory="../framework/bin/Release" />
 			<Add directory="../framework/src" />
 		</Linker>
-		<Unit filename="src/simloid_evolution.cpp" />
-		<Unit filename="src/simloid_evolution.h" />
+		<Unit filename="src/motor_params_evo.cpp">
+			<Option target="motor_params_evo" />
+		</Unit>
+		<Unit filename="src/motor_params_evo.h">
+			<Option target="motor_params_evo" />
+		</Unit>
+		<Unit filename="src/simloid_evolution.cpp">
+			<Option target="simloid_evolution" />
+		</Unit>
+		<Unit filename="src/simloid_evolution.h">
+			<Option target="simloid_evolution" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
