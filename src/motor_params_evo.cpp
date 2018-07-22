@@ -112,9 +112,65 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
     return true;
 }
 
+
+bool
+Evaluation::test_mode_step(std::vector<double> genome)
+{
+    unsigned steps = 0;
+    unsigned max_steps = profile.get_length();
+
+
+    MidiParams mp(midi, genome);
+    mp.step();
+
+    profile.reset();
+    robot.update();
+
+    //plot_position.reset();
+    //plot_voltage .reset();
+    //plot_targ_pos.reset();
+
+    control.set_model_parameter(genome);
+
+    while (steps < max_steps)
+    {
+        usleep(1000);
+        mp.step();
+        /* if paused or aborted */
+        if (do_quit.status()) return false; // abort
+        else if (do_pause.status()) {
+            usleep(10000); // 10 ms
+            robot.idle();
+            printf("halted\r");
+            continue;
+        }
+
+        profile.step();
+        control.execute_cycle();
+
+        if (!robot.update())
+        {
+            sts_msg("Testmode got no response from Simloid. Sending quit signal.");
+            quit();
+            return false; // abort
+        }
+
+        logdata(steps);
+        ++steps;
+    }
+
+    robot.restore_state();
+    return true;
+}
+
 bool
 Application::loop(void)
 {
+    if (test_mode) {
+        evaluation.test_mode_step( evolution->get_best_individuals_genome());
+        return true;
+    }
+
     if (evolution->get_current_trial() % evolution->get_population_size() == 0)
     {
         const statistics_t& fstats = evolution->get_fitness_statistics();
@@ -138,5 +194,21 @@ Application::finish(void)
     sts_msg("Finished shutting down all subsystems.");
     quit();
 }
+
+void
+Application::user_callback_key_pressed(const SDL_Keysym& keysym)
+{
+    switch (keysym.sym)
+    {
+        /* for all motors */
+        case SDLK_t:
+            test_mode = !test_mode;
+            sts_msg("TESTMODE: %s", (test_mode)? "ON":"OFF");
+            break;
+        default:
+            break;
+    }
+}
+
 
 APPLICATION_MAIN()

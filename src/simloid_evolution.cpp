@@ -145,7 +145,9 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         // TODO make the pushes have all same AUC (area under curve) smaller pushes have longer duration
         if (push_on)
         {
-            if (settings.push_mode == 0) { // random pushes
+            switch (settings.push_mode)
+            { // random pushes
+            case 0:
                 if (data.steps % settings.push_cycle == 0)
                 {
                     push_force.random(-settings.push_strength, settings.push_strength);
@@ -157,7 +159,9 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                     push_force.zero();
                     robot.set_force(body_index, push_force); // set force to zero
                 }
-            } else {
+                break;
+
+            case 1:
                 if (data.steps == settings.push_cycle)
                 {
                     push_force.x = settings.push_strength;
@@ -166,6 +170,27 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                     push_force.zero();
                     robot.set_force(settings.push_body, push_force);
                 }
+                break;
+
+            case 2:
+                if (data.steps <= settings.push_steps)
+                    control.insert_motor_command(settings.push_body,settings.push_strength);
+                break;
+
+            case 3:
+                if (data.steps % settings.push_cycle == 0)
+                {
+                    double a = clip(static_cast<double> (data.steps) / settings.max_steps, 0.0, 1.0);
+                    push_force.random(-settings.push_strength*a, settings.push_strength*a);
+                    body_index = random_index(robot.get_number_of_bodies());
+                    robot.set_force(body_index, push_force);
+                }
+                else if (data.steps % settings.push_cycle == settings.push_steps)
+                {
+                    push_force.zero();
+                    robot.set_force(body_index, push_force); // set force to zero
+                }
+                break;
             }
         }
         data.power += control.get_normalized_mechanical_power();
