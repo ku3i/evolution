@@ -248,6 +248,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 bool
 Application::loop(void)
 {
+    bool result = evolution->loop();
     if (evolution->get_current_trial() % evolution->get_population_size() == 0)
     {
         const statistics_t& fstats = evolution->get_fitness_statistics();
@@ -260,7 +261,7 @@ Application::loop(void)
         plot1D_avg_mutation.add_sample(mstats.avg);
         plot1D_min_mutation.add_sample(mstats.min);
     }
-    return evolution->loop();
+    return result;
 }
 
 void
