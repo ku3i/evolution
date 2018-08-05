@@ -252,14 +252,18 @@ Application::loop(void)
     if (evolution->get_current_trial() % evolution->get_population_size() == 0)
     {
         const statistics_t& fstats = evolution->get_fitness_statistics();
-        plot1D_max_fitness.add_sample(fstats.max);
-        plot1D_avg_fitness.add_sample(fstats.avg);
-        plot1D_min_fitness.add_sample(fstats.min);
+        if (fstats.num_samples>0) {
+            plot1D_max_fitness.add_sample(fstats.max);
+            plot1D_avg_fitness.add_sample(fstats.avg);
+            plot1D_min_fitness.add_sample(fstats.min);
+        }
 
         const statistics_t& mstats = evolution->get_mutation_statistics();
-        plot1D_max_mutation.add_sample(mstats.max);
-        plot1D_avg_mutation.add_sample(mstats.avg);
-        plot1D_min_mutation.add_sample(mstats.min);
+        if (mstats.num_samples>0) {
+            plot1D_max_mutation.add_sample(mstats.max);
+            plot1D_avg_mutation.add_sample(mstats.avg);
+            plot1D_min_mutation.add_sample(mstats.min);
+        }
     }
     return result;
 }
