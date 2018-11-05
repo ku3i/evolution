@@ -12,21 +12,22 @@ import pandas as pd
 import argparse
 import numpy
 
-from os.path import isfile, isdir
+from os.path import isfile, isdir, exists
+from os import makedirs
 from tableau20 import tableau20
 
 from common import *
 
-columns = ['max', 'avg', 'min']
+columns = ['fmax', 'favg', 'fmin']#, 'rmax', 'ravg', 'rmin'] TODO
 
 data_path   = "../data/exp/"
 logfile     = "evolution.log"
 pdfname     = "evolog.pdf"
-
+datafolder  = "data"
 
 def prepare_figure():
     # create figure with aspect ratio
-    plt.figure(figsize=(12, 9))
+    plt.figure(figsize=(8, 4))
     # transparent the plot frame
     ax = plt.subplot(111)
     ax.spines["top"   ].set_alpha(0.25)
@@ -51,7 +52,12 @@ def create_evolog(target, experiment):
                     , color=tableau20[i]
                     , lw=0.5 )
         #plt.show()
-        plt.savefig("{0}{1}".format(experiment, pdfname)
+        plt.legend(columns, loc="lower right")
+
+        target_dir = "{0}/{1}".format(experiment,datafolder)
+        if not exists(target_dir):
+            makedirs(target_dir)
+        plt.savefig("{0}/{1}".format(target_dir, pdfname)
                     , bbox_inches="tight")
         plt.clf()
     except:
@@ -68,18 +74,19 @@ def create_all_evologs(target):
 
 def create_summary_evologs(target, name, index_list):
 	print("\t{0}={1}".format(name, index_list))
-	
+
 	best,median,worst = get_best_worst_median(name, index_list)
-	
+
 	# draw plots
 	trials = get_max_trials(name.format(0))
 	evodict = {}
 
-	evodict['best'  ] = read_csv(name.format(best  )+logfile)['avg']
-	evodict['median'] = read_csv(name.format(median)+logfile)['avg']
-	evodict['worst' ] = read_csv(name.format(worst )+logfile)['avg']
+	assert isfile(name.format(best  )+logfile)
 
-	
+	evodict['best'  ] = read_csv(name.format(best  )+logfile)['favg']
+	evodict['median'] = read_csv(name.format(median)+logfile)['favg']
+	evodict['worst' ] = read_csv(name.format(worst )+logfile)['favg']
+
 	plt.plot(evodict['worst' ], color=tableau20[1], lw=0.5 )
 	plt.plot(evodict['best'  ], color=tableau20[0], lw=0.5 )
 	plt.plot(evodict['median'], color=tableau20[2], lw=0.5 )
@@ -95,6 +102,7 @@ def create_summary(target):
     prepare_figure()
     group = group_experiments(target)
     for g in group.keys():
+	print("_"*20)
         create_summary_evologs(target, g, group[g])
 
 
@@ -118,6 +126,7 @@ def main():
         return
 
     target.experiments = get_experiments(target)
+    print(target.experiments)
     if args.evologs:
         create_all_evologs(target)
     else:

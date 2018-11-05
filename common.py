@@ -114,8 +114,8 @@ def get_robot_id(path):
         print("ERROR: Did not find robot entry in {0}".format(conf))
         return 0
 
-#def get_experiments(target):
-#    return ["{0}/{1}/".format(target.path, d) for d in sorted(listdir(target.path)) if isdir(join(target.path, d))]
+def get_experiments(target):
+    return ["{0}/{1}/".format(target.path, d) for d in sorted(listdir(target.path)) if isdir(join(target.path, d))]
 
 
 # returns dictionary
