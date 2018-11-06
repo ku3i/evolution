@@ -91,6 +91,7 @@ def is_experiment(path):
     return isdir(path) \
         and isfile(path+"/"+constants.config_file)
 
+
 def is_completed(path):
     conf = path+"/"+constants.config_file
     with open(conf) as f:
@@ -100,6 +101,7 @@ def is_completed(path):
         return 2 == int(m.groups()[0])
     print("ERROR: Did not find status entry in {0}".format(conf))
     return False
+
 
 def get_robot_id(path):
     conf = path.rstrip('/') + "/" +constants.config_file
@@ -114,8 +116,9 @@ def get_robot_id(path):
         print("ERROR: Did not find robot entry in {0}".format(conf))
         return 0
 
-#def get_experiments(target):
-#    return ["{0}/{1}/".format(target.path, d) for d in sorted(listdir(target.path)) if isdir(join(target.path, d))]
+
+def get_experiments(target):
+    return ["{0}/{1}/".format(target.path, d) for d in sorted(listdir(target.path)) if isdir(join(target.path, d))]
 
 
 # returns dictionary
@@ -166,7 +169,7 @@ def get_best_worst_median(name, index_list):
 
 def execute_command(command):
     args = shlex.split(command)
-    print(args)
+    print(' '.join(args))
     proc = Popen(args, stdout=PIPE, stderr=PIPE)
     while proc.poll() is None:
         sleep(1)

@@ -10,39 +10,50 @@ class default:
     filetype = ".ppm"
     outname  = "result.jpg"
     quality  = 100
-    width    = 1024
+    width    = 2048
 
 
 def find_all_frames(path, filetype):
     filenames = []
     path = path.rstrip("/")
-    for _, _, files in os.walk(path):
-        for f in sorted(files):
-            if f.endswith(filetype):
-                filenames.append(path+"/"+f)
+    for f in sorted(os.listdir(path)):
+        if f.endswith(filetype):
+            filenames.append(path+"/"+f)
+    if len(filenames) == 0:
+        print("no images found.")
+        exit()
     return filenames
 
-def reduce_frames(filenames, start, number):
+
+def reduce_frames(filenames, start, number, step):
+    print("stepsize is "+str(step))
     if start:
-        s = filenames.index(start)
-        if s: 
-            print("starting with frame {0} ({1})".format(start,s))
-            if number > 0:
-                number = min(number, len(filenames)-s-1)
-                print("taking {0} frames only".format(number))
-                return filenames[s:s+number]
-            else:
-                return filenames[s:]
+        try:
+            s = filenames.index(start)
+        except:
+            print("WARNING: invalid start frame.")
+            s = 0
+    else:
+        s = 0
+
+    print("starting with frame {0} (index:{1})".format(start,s))
+    if number > 0:
+        number = min(number, len(filenames)-s-1)
+        print("taking {0} frames only".format(number))
+        return filenames[s:s+number*step-1:step]
+    else:
+        return filenames[s::step]
+
     print("will take all frames")
-    return filenames
+    return filenames[::step]
 
 
 def read_img(filenames):
     print("reading:")
     images = []
-    for f in filenames:
+    for idx,f in enumerate(filenames):
         im = Image.open(f)
-        print("{0} {1} {2} {3}".format(f, im.format, im.size, im.mode))
+        print("{4:2d}: {0} format:{1} size:{2} color:{3}".format(f, im.format, im.size, im.mode, idx))
         images.append(im)
     return images
 
@@ -55,6 +66,19 @@ def resize(images, max_width):
         ratio = float(nwidth)/im.size[0]
         nheight = int(round(ratio * im.size[1]))
         out = im.resize((nwidth, nheight), resample=Image.ANTIALIAS)
+        res_images.append(out)
+    return res_images
+
+
+def crop(images, cropw):
+    if cropw == 0:
+        return images
+    res_images = []
+    for im in images:
+        b = min(im.size[0], cropw)
+        box = (im.size[0]//2-b, 0, im.size[0]//2+b, im.size[1])
+        print(box)
+        out = im.crop(box)
         res_images.append(out)
     return res_images
 
@@ -86,19 +110,24 @@ def main():
     parser.add_argument('-p', '--path'   , default=default.folder)
     parser.add_argument('-o', '--outfile', default=default.outname)
     parser.add_argument('-t', '--intype' , default=default.filetype)
-    parser.add_argument('-w', '--width'  , default=default.width, type=int)
+    parser.add_argument('-w', '--width'  , default=default.width  , type=int)
     parser.add_argument('-q', '--quality', default=default.quality, type=int)
     parser.add_argument('-s', '--start'  , default=None)
     parser.add_argument('-n', '--number' , default=0, type=int)
+    parser.add_argument('-x', '--step'   , default=1, type=int)
+    parser.add_argument('-c', '--crop'   , default=0, type=int)
+    parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
     filenames = find_all_frames(args.path, args.intype)
-    filenames = reduce_frames(filenames, args.start, args.number)
+    filenames = reduce_frames(filenames, args.start, args.number, args.step)
     images = read_img(filenames)
-    images = resize(images,args.width)
+    images = crop(images, args.crop)
+    images = resize(images, args.width)
     nim = concatenate(images)
 
-    #nim.show()
+    if args.verbose:
+        nim.show()
     nim.save(args.outfile, 'JPEG', quality=args.quality)
 
     print("____\nDONE.")
