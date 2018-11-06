@@ -25,20 +25,20 @@ fitness = { "e" : "efficient"
 
 def decode_shortname(filename):
     #e.g. 4_tadpole_10_p_0fw_e
-    m = re.search("(\d+)_([a-zA-Z]+)_(\d+)_([a-zA-Z])_(\w+)_(e|f)([shr]*).dat", filename) #TODO decode stop, rocks, hurdles etc.
+    m = re.search("(\d+|T)_([a-zA-Z]+)(?:_[s]\d)?_(\d+)_([a-zA-Z])_(\w+)_(e|f)([shr]*).dat", filename) #TODO decode stop, rocks, hurdles etc.
     if m:
         name = "{0} {1} {2} no.{3}".format( m.groups()[1]            \
                                           , behaviors[m.groups()[4]] \
                                           , fitness[m.groups()[5]]   \
-                                          , int(m.groups()[0])       )
+                                          , m.groups()[0]            )
         return name
     print("Name did not match conventions: {0}".format(filename))
     return filename
 
 
-def create_seed(path, filename, params):
+def create_seed(path, filename, params, outdir):
     print (" >> lib")
-    with open(lib_dir+"/"+filename, "w") as f:
+    with open(lib_dir+"/"+outdir+"/"+filename, "w") as f:
         f.write("name = \"{0}\"\n".format(decode_shortname(filename)))
         f.write("symmetry = \"{0}\"\n".format("symmetric" if is_symmetric_controller(path) else "asymmetric"))
         f.write("propagation = \"original\"\n")
@@ -122,7 +122,7 @@ def find_experiments(path, filt, getseed, dir_level = 0):
         if getseed and result==100:
             best = get_best_individual(exp_path)
             if best:
-                create_seed(exp_path, d+seed_fend, best)
+                create_seed(exp_path, d+seed_fend, best, getseed)
         else:
             print
 
@@ -143,15 +143,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filter' , default='')
     parser.add_argument('-p', '--path'   , default=exp_dir)
-    parser.add_argument('-g', '--getseed', action='store_true')
+    parser.add_argument('-g', '--getseed', default='')
     args = parser.parse_args()
 
     filt = str(args.filter)
     path = str(args.path)
 
     # create library dir, if it is not already there
-    if args.getseed and not isdir(lib_dir):
-        mkdir(lib_dir)
+    if args.getseed and not isdir(lib_dir+"/"+args.getseed):
+        mkdir(lib_dir+"/"+args.getseed)
 
     if isdir(path):
         try:
