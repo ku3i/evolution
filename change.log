@@ -1,3 +1,6 @@
+2018-08-08 : Release 1.1.1
+	+ fixed bug with initialization of ppopulation's fitness in pool-based evolution
+
 2018-01-19 : Release 1.1.0
 	+ support for recording frames and simloid pausing
 

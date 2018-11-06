@@ -51,6 +51,11 @@ void Evaluation::draw(void) const
     axis_position_z.draw();
     plot_position_z.draw();
     plot_rotation_z.draw();
+
+    glColor3f(1.0,1.0,1.0);
+    glprints(-.99,-.95,0.0, 0.04, settings.project_name);
+    glprintf(-.99,-.90,0.0, 0.04, "steps: %5lu/%lu"  , data.steps, settings.max_steps);
+    glprintf(-.99,-.85,0.0, 0.04, "power: %5.2f/%lu", data.power, settings.max_power);
 }
 
 void
@@ -77,7 +82,8 @@ bool
 Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value)
 {
     assert(fitness_function != nullptr);
-    fitness_data data;
+    data = fitness_data{};
+
     /* 10% of initial steps is random time, equal for each individual of a certain generation*/
     const unsigned int rnd_steps = (unsigned int) (0.1 * rand_value * settings.initial_steps);
     Vector3 push_force(0.0);
@@ -119,6 +125,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
             logdata(data.steps, max_initial_steps);
             ++data.steps;
+            ++cycles;
 
         } // end while
 
@@ -128,6 +135,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
     control.set_control_parameter(genome); // apply new controller weights
     fitness_function->start(data);
+    data.max_steps = settings.max_steps;
 
     while (data.steps < settings.max_steps)
     {
@@ -205,6 +213,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         fitness_function->step(data);
         logdata(data.steps);
         ++data.steps;
+        ++cycles;
 
         /* drop penalty */
         if (data.dropped or data.out_of_track or data.stopped)
@@ -239,19 +248,24 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 bool
 Application::loop(void)
 {
+    bool result = evolution->loop();
     if (evolution->get_current_trial() % evolution->get_population_size() == 0)
     {
         const statistics_t& fstats = evolution->get_fitness_statistics();
-        plot1D_max_fitness.add_sample(fstats.max);
-        plot1D_avg_fitness.add_sample(fstats.avg);
-        plot1D_min_fitness.add_sample(fstats.min);
+        if (fstats.num_samples>0) {
+            plot1D_max_fitness.add_sample(fstats.max);
+            plot1D_avg_fitness.add_sample(fstats.avg);
+            plot1D_min_fitness.add_sample(fstats.min);
+        }
 
         const statistics_t& mstats = evolution->get_mutation_statistics();
-        plot1D_max_mutation.add_sample(mstats.max);
-        plot1D_avg_mutation.add_sample(mstats.avg);
-        plot1D_min_mutation.add_sample(mstats.min);
+        if (mstats.num_samples>0) {
+            plot1D_max_mutation.add_sample(mstats.max);
+            plot1D_avg_mutation.add_sample(mstats.avg);
+            plot1D_min_mutation.add_sample(mstats.min);
+        }
     }
-    return evolution->loop();
+    return result;
 }
 
 void

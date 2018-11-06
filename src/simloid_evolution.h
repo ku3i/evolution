@@ -32,14 +32,16 @@ extern GlobalFlag do_pause;
 class Evaluation : public virtual Evaluation_Interface
 {
 public:
-    Evaluation(const Setting& settings, Datalog& logger, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0)
+    Evaluation(const Setting& settings, Datalog& logger, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0, uint64_t& cycles)
     : settings(settings)
     , logger(logger)
     , robot(robot)
     , control(control)
     , param0(param0)
     , fitness_function(assign_fitness(robot, settings))
+    , data()
     , verbose(settings.visuals)
+    , cycles(cycles)
     , robot_log(robot)
     , axis_position_xy(.5, -.50, .0, 1., 1.0, 0, "xy-position")
     , axis_position_z(-.5, -.25, .0, 1., 0.5, 1,  "z-position")
@@ -70,7 +72,9 @@ private:
     control::Jointcontrol&      control;
     control::Control_Parameter& param0;
     Fitness_ptr                 fitness_function;
+    fitness_data                data;
     const bool                  verbose;
+    uint64_t&                   cycles;
 
     /*logs*/
     robots::Simloid_Log         robot_log;
@@ -100,14 +104,14 @@ public:
                                       , settings.symmetric_controller
                                       , { settings.param_p, settings.param_d, settings.param_m }
                                       , settings.seed ))
-    , evaluation(settings, logger, robot, control, seed)
+    , evaluation(settings, logger, robot, control, seed, cycles)
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
                                                  : new Evolution(evaluation, settings, (settings.project_status == WATCH)))
-    , axis_fitness(.0, .25, .0, 2., 0.5, 1, "Fitness")
+    , axis_fitness(.5, .5, .0, 1., 1.0, 1, "Fitness")
     , plot1D_max_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::white)
     , plot1D_avg_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::orange)
     , plot1D_min_fitness(std::min(evolution->get_number_of_trials(), 1000lu), axis_fitness, colors::pidgin)
-    , axis_mutation(.0, .75, .0, 2., 0.5, 1, "Mutation")
+    , axis_mutation(-.5, .5, .0, 1., 1.0, 1, "Mutation")
     , plot1D_max_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::white)
     , plot1D_avg_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::orange)
     , plot1D_min_mutation(std::min(evolution->get_number_of_trials(), 1000lu), axis_mutation, colors::pidgin)
