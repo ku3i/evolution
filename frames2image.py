@@ -1,5 +1,21 @@
 #!/usr/bin/python
 
+"""
+    This script draws the recorded frames from the 'path' folder into a single sequence image.
+
+    example:
+
+        ./frames2image.py -p ./data/ -s frame0791.ppm -n 10 -x 2 -c 250 -v
+
+        + folder: ./data/
+        + starting at specific frame
+        + 10 images
+        + take only every 2nd frame
+        + crop to 250 px width
+        + be verbose
+"""
+
+
 import os
 import argparse
 from PIL import Image
@@ -76,7 +92,7 @@ def crop(images, cropw):
     res_images = []
     for im in images:
         b = min(im.size[0], cropw)
-        box = (im.size[0]//2-b, 0, im.size[0]//2+b, im.size[1])
+        box = (im.size[0]//2-b//2, 0, im.size[0]//2+b//2, im.size[1])
         print(box)
         out = im.crop(box)
         res_images.append(out)
@@ -120,7 +136,7 @@ def main():
     args = parser.parse_args()
 
     filenames = find_all_frames(args.path, args.intype)
-    filenames = reduce_frames(filenames, args.start, args.number, args.step)
+    filenames = reduce_frames(filenames, args.path+args.start, args.number, args.step)
     images = read_img(filenames)
     images = crop(images, args.crop)
     images = resize(images, args.width)
