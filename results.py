@@ -73,11 +73,11 @@ def get_time(data, tmin = None, tmax = None):
     te = min(tmax, ii[1]) if tmax else ii[1] # end
     return ts, te
 
-def read_and_plot_single_experiment(path,expname):
-    print("Plotting: {0}".format(path+expname))
-    rid = get_robot_id(path+expname)
+def read_and_plot_single_experiment(expname):
+    print("Plotting: {0}".format(expname))
+    rid = get_robot_id(expname)
     columns = create_columns(rid)
-    data = read_data_log(path+expname+"/"+constants.data_log, columns)
+    data = read_data_log(expname+"/data/"+constants.data_log, columns)
     data.ename = expname
 
     ts, te = get_time(data, 200,400)
@@ -130,10 +130,11 @@ def main():
     print("Processing experiments:")
     data_all = []
     for e in experiments:
-        data_all.append(read_and_plot_single_experiment(args.path,e))
+        data_all.append(read_and_plot_single_experiment(e))
         #exit() #remove
-    plot_all_experiment(data_all)
-    plt.show()
+    if len(data_all) > 0:
+        plot_all_experiment(data_all)
+        plt.show()
 
     print("____\nDONE.")
 

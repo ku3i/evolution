@@ -180,7 +180,7 @@ def execute_command(command):
 
 
 def is_recorded(path):
-    return isfile(path+"/"+constants.data_log)
+    return isfile(path+"/data/"+constants.data_log)
 
 
 def find_experiments(path, filt, dir_level = 0, find_recorded_only = True):
