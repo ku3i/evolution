@@ -27,7 +27,7 @@ datafolder  = "data"
 
 def prepare_figure():
     # create figure with aspect ratio
-    plt.figure(figsize=(8, 4))
+    plt.figure(figsize=(6, 3))
     # transparent the plot frame
     ax = plt.subplot(111)
     ax.spines["top"   ].set_alpha(0.25)
@@ -90,8 +90,9 @@ def create_summary_evologs(target, name, index_list):
 	plt.plot(evodict['worst' ], color=tableau20[1], lw=0.5 )
 	plt.plot(evodict['best'  ], color=tableau20[0], lw=0.5 )
 	plt.plot(evodict['median'], color=tableau20[2], lw=0.5 )
-
-	plt.legend(['worst','best','median'], loc="lower right")
+	if target.limit is not None:
+		plt.ylim(0, target.limit)
+	plt.legend(['min','max','med'], loc="lower right")
 	#plt.show()
 	plt.savefig("{0}_{1}".format(name.format("").rstrip("/").lstrip("_"), pdfname), bbox_inches="tight")
 	plt.clf()
@@ -110,6 +111,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--robot')
     parser.add_argument('-a', '--evologs', action="store_true", default=False)
+    parser.add_argument('-y', '--yscale_limit', default=None, type=float)
     args = parser.parse_args()
 
     if args.robot==None:
@@ -120,6 +122,7 @@ def main():
     target = lambda: None
     target.path = data_path + robot
     target.robot = robot
+    target.limit = args.yscale_limit
 
     if not isdir(target.path):
         print("Error: no such folder: {0}".format(target.path))
