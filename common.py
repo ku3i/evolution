@@ -3,8 +3,8 @@
 """
 import re, shlex
 from subprocess import Popen, PIPE
-from os import listdir
-from os.path import isfile, isdir, join
+from os import listdir, makedirs
+from os.path import isfile, isdir, join, exists
 from time import sleep
 
 import pandas as pd
@@ -85,6 +85,11 @@ def create_columns(robot_id):
                , "avg_vel_z"
                ]
     return columns
+
+
+def create_folder(folder):
+    if not exists(folder):
+        makedirs(folder)
 
 
 def is_experiment(path):

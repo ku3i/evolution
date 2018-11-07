@@ -45,14 +45,11 @@ def prepare_figure():
     ax.get_xaxis().tick_bottom()
 
 
-def create_folder(folder):
-    if not exists(folder):
-        makedirs(folder)
-
 def conduct(robot, expname, port, dry = False, log_data = False, log_video = False):
     target_dir = "{0}{1}/{2}".format(data_path, expname, output_folder)
 
     if (log_data or log_video):
+        create_folder(target_dir)
         add_args = "--enable_logging"
         add_args += " --outfile {0}/data.log".format(target_dir) if log_data else ""
         add_args += " --include_video --no_pause --outfile {0}/video.log".format(target_dir) if log_video else " --blind"
@@ -117,8 +114,7 @@ def main():
 
             if args.log_video:
                 directory = "data/"+robot
-                if not exists(directory):
-                    makedirs(directory)
+                create_folder(directory)
                 subprocess.call(['./ppm2avi.sh {0}'.format(best_exp_name)], shell=True)
 
             port+=1

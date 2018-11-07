@@ -12,8 +12,7 @@ import pandas as pd
 import argparse
 import numpy
 
-from os.path import isfile, isdir, exists
-from os import makedirs
+from os.path import isfile, isdir
 from tableau20 import tableau20
 
 from common import *
@@ -55,8 +54,7 @@ def create_evolog(target, experiment):
         plt.legend(columns, loc="lower right")
 
         target_dir = "{0}/{1}".format(experiment,datafolder)
-        if not exists(target_dir):
-            makedirs(target_dir)
+        create_folder(target_dir)
         plt.savefig("{0}/{1}".format(target_dir, pdfname)
                     , bbox_inches="tight")
         plt.clf()
