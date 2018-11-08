@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
 import re, argparse
-from os import listdir, mkdir
+from os import listdir, makedirs
 from os.path import isfile, isdir
+
+#TODO use code from common
+#from common import *
 
 exp_dir   = "../data/exp"
 lib_dir   = "../data/lib"
@@ -151,7 +154,7 @@ def main():
 
     # create library dir, if it is not already there
     if args.getseed and not isdir(lib_dir+"/"+args.getseed):
-        mkdir(lib_dir+"/"+args.getseed)
+        makedirs(lib_dir+"/"+args.getseed)
 
     if isdir(path):
         try:
