@@ -26,18 +26,19 @@ Application::draw(const pref& /*p*/) const
     evaluation.draw();
 }
 
+void Evaluation::prepare_generation(unsigned cur_generation, unsigned max_generation)
+{
+    prepare_evaluation(cur_generation*settings.population_size, max_generation*settings.population_size);
+}
+
 void
-Evaluation::prepare_generation(unsigned cur_generation, unsigned max_generation)
+Evaluation::prepare_evaluation(unsigned cur_trial, unsigned max_trial)
 {
     if (!settings.random_mode) return;
-    if (0 == cur_generation) return;
+    if (0 == cur_trial) return;
 
-    if (settings.strategy != "GENERATION")
-        err_msg(__FILE__, __LINE__, "Random-Mode currently not implemented for pool-based strategies.");
-    /** TODO: think about implementing random-mode for pool-based */
-
-    double rnd_amplitude = (double) cur_generation / max_generation;
-    dbg_msg("Preparing new randomized model for generation %u with amplitude %lf", cur_generation, rnd_amplitude);
+    double rnd_amplitude = (double) cur_trial / max_trial;
+    dbg_msg("Preparing new randomized model with amplitude %lf in trial %u of %u", rnd_amplitude, cur_trial, max_trial);
     robot.randomize_model(rnd_amplitude);
 
     return;
@@ -51,11 +52,13 @@ void Evaluation::draw(void) const
     axis_position_z.draw();
     plot_position_z.draw();
     plot_rotation_z.draw();
+    plot_velocity_y.draw();
 
     glColor3f(1.0,1.0,1.0);
     glprints(-.99,-.95,0.0, 0.04, settings.project_name);
-    glprintf(-.99,-.90,0.0, 0.04, "steps: %5lu/%lu"  , data.steps, settings.max_steps);
+    glprintf(-.99,-.90,0.0, 0.04, "steps: %5lu/%lu" , data.steps, settings.max_steps);
     glprintf(-.99,-.85,0.0, 0.04, "power: %5.2f/%lu", data.power, settings.max_power);
+    glprintf(-.99,-.80,0.0, 0.04, "py: %5.2f px: %5.2f" , robot.get_avg_position().y, robot.get_avg_position().x);
 }
 
 void
@@ -67,6 +70,7 @@ Evaluation::logdata(uint32_t cycles, uint32_t preparation_cycles = 0)
 
     plot_position_z.add_sample(robot.get_avg_position().z);
     plot_rotation_z.add_sample(robot.get_avg_rotation()/M_PI);
+    plot_velocity_y.add_sample(robot.get_avg_velocity_forward());
 
     if (logger.is_enabled())
         logger.log("%lld %s"// use %+e
@@ -87,17 +91,18 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
     /* 10% of initial steps is random time, equal for each individual of a certain generation*/
     const unsigned int rnd_steps = (unsigned int) (0.1 * rand_value * settings.initial_steps);
     Vector3 push_force(0.0);
-    const bool push_on = (settings.push_cycle > 0 and
-                          settings.push_steps > 0 and
-                          settings.push_strength > .0);
+    const bool push_on = (settings.push.cycle > 0 and
+                          settings.push.steps > 0 and
+                          settings.push.strength > .0);
 
     unsigned int body_index = 0;
     control.reset();
     robot.update();
 
     plot_position_xy.reset();
-    plot_position_z .reset();
-    plot_rotation_z .reset();
+    //plot_position_z .reset();
+    //plot_rotation_z .reset();
+    //plot_velocity_y .reset();
 
     if (settings.initial_steps > 0) // trial begins with seed, then switches to evolving parameters
     {
@@ -153,16 +158,16 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         // TODO make the pushes have all same AUC (area under curve) smaller pushes have longer duration
         if (push_on)
         {
-            switch (settings.push_mode)
+            switch (settings.push.mode)
             { // random pushes
             case 0:
-                if (data.steps % settings.push_cycle == 0)
+                if (data.steps % settings.push.cycle == 0)
                 {
-                    push_force.random(-settings.push_strength, settings.push_strength);
+                    push_force.random(-settings.push.strength, settings.push.strength);
                     body_index = random_index(robot.get_number_of_bodies());
                     robot.set_force(body_index, push_force);
                 }
-                else if (data.steps % settings.push_cycle == settings.push_steps)
+                else if (data.steps % settings.push.cycle == settings.push.steps)
                 {
                     push_force.zero();
                     robot.set_force(body_index, push_force); // set force to zero
@@ -170,30 +175,30 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                 break;
 
             case 1:
-                if (data.steps == settings.push_cycle)
+                if (data.steps == settings.push.cycle)
                 {
-                    push_force.x = settings.push_strength;
-                    robot.set_force(settings.push_body, push_force);
-                } else if (data.steps == settings.push_cycle + settings.push_steps) {
+                    push_force.x = settings.push.strength;
+                    robot.set_force(settings.push.body, push_force);
+                } else if (data.steps == settings.push.cycle + settings.push.steps) {
                     push_force.zero();
-                    robot.set_force(settings.push_body, push_force);
+                    robot.set_force(settings.push.body, push_force);
                 }
                 break;
 
             case 2:
-                if (data.steps <= settings.push_steps)
-                    control.insert_motor_command(settings.push_body,settings.push_strength);
+                if (data.steps <= settings.push.steps)
+                    control.insert_motor_command(settings.push.body,settings.push.strength);
                 break;
 
             case 3:
-                if (data.steps % settings.push_cycle == 0)
+                if (data.steps % settings.push.cycle == 0)
                 {
                     double a = clip(static_cast<double> (data.steps) / settings.max_steps, 0.0, 1.0);
-                    push_force.random(-settings.push_strength*a, settings.push_strength*a);
+                    push_force.random(-settings.push.strength*a, settings.push.strength*a);
                     body_index = random_index(robot.get_number_of_bodies());
                     robot.set_force(body_index, push_force);
                 }
-                else if (data.steps % settings.push_cycle == settings.push_steps)
+                else if (data.steps % settings.push.cycle == settings.push.steps)
                 {
                     push_force.zero();
                     robot.set_force(body_index, push_force); // set force to zero
@@ -239,6 +244,8 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
     }
 
     fitness_function->finish(data);
+
+    dbg_msg("L1=%1.3f #=%u(%u)", control.get_L1_norm(), control.get_number_of_symmetric_parameter(), control.get_number_of_parameter());
 
     robot.restore_state();
     fitness.set_value(data.fit);

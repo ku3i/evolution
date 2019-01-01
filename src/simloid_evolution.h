@@ -44,10 +44,11 @@ public:
     , cycles(cycles)
     , robot_log(robot)
     , axis_position_xy(.5, -.50, .0, 1., 1.0, 0, "xy-position")
-    , axis_position_z(-.5, -.25, .0, 1., 0.5, 1,  "z-position")
+    , axis_position_z(-.5, -.25, .0, 1., 0.5, 1,  "z-position", 0.1)
     , plot_position_xy(std::min(10000u, settings.max_steps), axis_position_xy, colors::white)
-    , plot_position_z (std::min(10000u, settings.max_steps), axis_position_z , colors::white)
-    , plot_rotation_z (std::min(10000u, settings.max_steps), axis_position_z , colors::brown)
+    , plot_position_z (std::min(10000u, settings.max_steps), axis_position_z , colors::cyan)
+    , plot_rotation_z (std::min(10000u, settings.max_steps), axis_position_z , colors::magenta)
+    , plot_velocity_y (std::min(10000u, settings.max_steps), axis_position_z , colors::yellow)
     /**TODO print out mutation rate average and std dev */
     {
         sts_msg("Creating evaluation function.");
@@ -59,9 +60,12 @@ public:
         /* prepare frame recording */
         if (logger.is_video_included())
             robot.record_next_frame();
+
+        robot.set_low_sensor_quality(settings.low_sensor_quality);
     }
     bool evaluate(Fitness_Value &fitness, const std::vector<double>& genome, double rand_value);
     void prepare_generation(unsigned cur_generation, unsigned max_generation);
+    void prepare_evaluation(unsigned cur_trial, unsigned max_trial);
     void draw(void) const;
     void logdata(uint32_t, uint32_t);
 
@@ -86,6 +90,7 @@ private:
     plot2D plot_position_xy;
     plot1D plot_position_z;
     plot1D plot_rotation_z;
+    plot1D plot_velocity_y;
 };
 
 
