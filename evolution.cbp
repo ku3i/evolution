@@ -58,9 +58,11 @@
 			<Add library="GL" />
 			<Add library="GLU" />
 			<Add library="glut" />
+			<Add library="asound" />
 			<Add directory="../framework/bin/Release" />
 			<Add directory="../framework/src" />
 		</Linker>
+		<Unit filename="../framework/src/common/change_limiter.h" />
 		<Unit filename="src/motor_params_evo.cpp">
 			<Option target="motor_params_evo" />
 		</Unit>

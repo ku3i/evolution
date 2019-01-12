@@ -80,6 +80,8 @@ private:
     const bool                  verbose;
     uint64_t&                   cycles;
 
+    double                      rnd_amplitude = .0;
+
     /*logs*/
     robots::Simloid_Log         robot_log;
 

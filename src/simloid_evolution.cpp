@@ -24,6 +24,9 @@ Application::draw(const pref& /*p*/) const
     plot1D_max_mutation.draw();
 
     evaluation.draw();
+
+    glprintf(-.99,-.90,0.0, 0.04, "Trial: %lu/%lu" , evolution->get_current_trial(), evolution->get_number_of_trials());
+
 }
 
 void Evaluation::prepare_generation(unsigned cur_generation, unsigned max_generation)
@@ -37,7 +40,7 @@ Evaluation::prepare_evaluation(unsigned cur_trial, unsigned max_trial)
     if (!settings.random_mode) return;
     if (0 == cur_trial) return;
 
-    double rnd_amplitude = (double) cur_trial / max_trial;
+    rnd_amplitude = (double) cur_trial / max_trial;
     dbg_msg("Preparing new randomized model with amplitude %lf in trial %u of %u", rnd_amplitude, cur_trial, max_trial);
     robot.randomize_model(rnd_amplitude);
 
@@ -55,10 +58,11 @@ void Evaluation::draw(void) const
     plot_velocity_y.draw();
 
     glColor3f(1.0,1.0,1.0);
-    glprints(-.99,-.95,0.0, 0.04, settings.project_name);
-    glprintf(-.99,-.90,0.0, 0.04, "steps: %5lu/%lu" , data.steps, settings.max_steps);
-    glprintf(-.99,-.85,0.0, 0.04, "power: %5.2f/%lu", data.power, settings.max_power);
-    glprintf(-.99,-.80,0.0, 0.04, "py: %5.2f px: %5.2f" , robot.get_avg_position().y, robot.get_avg_position().x);
+    glprintf(-.99,-.60,0.0, 0.04, "py: %5.2f px: %5.2f" , robot.get_avg_position().y, robot.get_avg_position().x);
+    glprintf(-.99,-.65,0.0, 0.04, "power: %5.2f/%lu", data.power, settings.max_power);
+    glprintf(-.99,-.70,0.0, 0.04, "steps: %5lu/%lu" , data.steps, settings.max_steps);
+    glprintf(-.99,-.75,0.0, 0.04, "randomness: %5.2f", rnd_amplitude);
+    glprints(-.99,-.80,0.0, 0.04, settings.project_name);
 }
 
 void
