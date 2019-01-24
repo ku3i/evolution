@@ -1,3 +1,21 @@
+
+2019-01-24 : Release 1.2.0
+	+ improved random instance mode, setting for massive hannah randomize session.
+	+ display more evo-settings and data in opengl window.
+	+ low sensor mode support, random mode for pool-based support, graphical diag.
+	+ new experimental setting for hannah and humanoid51.
+	+ remove jpgs also before running the videoscript.
+	+ fixed dir creation
+	+ creating folders moved to common.
+	+ plotting evologs: renamed legend, added yscale parameter.
+	+ fixed result.py
+	+ bunch of premature scripts.
+	+ improved status.py
+	+ improved datarecorder.
+	+ improved frames2images.
+	+ more setting in frames2images.
+	+ fixed evoplot script.
+
 2018-08-08 : Release 1.1.1
 	+ fixed bug with initialization of ppopulation's fitness in pool-based evolution
 
