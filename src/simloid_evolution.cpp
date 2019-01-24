@@ -37,13 +37,33 @@ void Evaluation::prepare_generation(unsigned cur_generation, unsigned max_genera
 void
 Evaluation::prepare_evaluation(unsigned cur_trial, unsigned max_trial)
 {
-    if (!settings.random_mode) return;
+    if ("NONE" == settings.rnd.mode or settings.rnd.mode.empty()) return;
     if (0 == cur_trial) return;
 
-    rnd_amplitude = (double) cur_trial / max_trial;
-    dbg_msg("Preparing new randomized model with amplitude %lf in trial %u of %u", rnd_amplitude, cur_trial, max_trial);
-    robot.randomize_model(rnd_amplitude);
-
+    if ("LIN_INC" == settings.rnd.mode)
+    {
+        rnd_amplitude = (double) cur_trial / max_trial;
+        sts_msg("Preparing new randomized model with linearly increasing amplitude %lf in trial %u of %u", rnd_amplitude, cur_trial, max_trial);
+        robot.randomize_model(rnd_amplitude);
+    }
+    else if ("CONSTANT" == settings.rnd.mode) {
+        rnd_amplitude = settings.rnd.value;
+        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amplitude);
+        if (0 != settings.rnd.init)
+            sts_msg("Using random initial seed: %lu", settings.rnd.init);
+        robot.randomize_model(rnd_amplitude, settings.rnd.init);
+    }
+    else if ("CONSTANT_ONCE" == settings.rnd.mode) {
+        rnd_amplitude = settings.rnd.value;
+        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amplitude);
+        if (0 == settings.rnd.init) {
+            sts_msg("Using random initial seed: %lu", settings.rnd.init);
+            settings.rnd.init = robot.randomize_model(rnd_amplitude, settings.rnd.init); /* gets back random seed */
+        } else {
+            robot.randomize_model(rnd_amplitude, settings.rnd.init);
+        }
+    }
+    else err_msg(__FILE__,__LINE__,"Unrecognized random mode setting: '%s'.", settings.rnd.mode.c_str());
     return;
 }
 
