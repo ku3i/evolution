@@ -96,6 +96,11 @@ private:
 };
 
 
+std::vector<double> create_motor_params(Setting const& settings) {
+    if ("NONE" == settings.rnd.mode) return {};
+    else return {static_cast<double>(settings.rnd.init), settings.rnd.value};
+}
+
 class Application : public Application_Base
 {
     typedef std::unique_ptr<Evolution> Evolution_ptr;
@@ -104,7 +109,7 @@ public:
     Application(int argc, char** argv, Event_Manager& em)
     : Application_Base(argc, argv, em, "Evolution", 640, 640)
     , settings(argc, argv)
-    , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals)
+    , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals, /*realtime =*/ true, create_motor_params(settings))
     , control(robot)
     , seed( control::initialize_anyhow( robot
                                       , control
