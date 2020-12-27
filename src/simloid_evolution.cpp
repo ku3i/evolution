@@ -37,33 +37,41 @@ void Evaluation::prepare_generation(unsigned cur_generation, unsigned max_genera
 void
 Evaluation::prepare_evaluation(unsigned cur_trial, unsigned max_trial)
 {
-    if ("NONE" == settings.rnd.mode or settings.rnd.mode.empty()) return;
-    if (0 == cur_trial) return;
 
-    if ("LIN_INC" == settings.rnd.mode)
+    growth = clip(settings.growth.init + cur_trial*settings.growth.rate, 0.0, 1.0);
+
+    if ("NONE" == settings.rnd.mode or settings.rnd.mode.empty()) {
+        /* do nothing */
+        if (0 == cur_trial and growth == 1.0) return;
+        sts_msg("Preparing new model (growing only).");
+        rnd_amp = 0.0;
+        robot.randomize_model(rnd_amp, growth, settings.friction, /*inst=*/0); // only for initial position, TODO this could be removed if initial position is defined by client
+    }
+    else if ("LIN_INC" == settings.rnd.mode)
     {
-        rnd_amplitude = (double) cur_trial / max_trial;
-        sts_msg("Preparing new randomized model with linearly increasing amplitude %lf in trial %u of %u", rnd_amplitude, cur_trial, max_trial);
-        robot.randomize_model(rnd_amplitude);
+        rnd_amp = (double) cur_trial / max_trial;
+        sts_msg("Preparing new randomized model with linearly increasing amplitude %lf in trial %u of %u", rnd_amp, cur_trial, max_trial);
+        robot.randomize_model(rnd_amp, growth, settings.friction, /*inst=*/0);
     }
     else if ("CONSTANT" == settings.rnd.mode) {
-        rnd_amplitude = settings.rnd.value;
-        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amplitude);
+        rnd_amp = settings.rnd.value;
+        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amp);
         if (0 != settings.rnd.init)
             sts_msg("Using random initial seed: %lu", settings.rnd.init);
-        robot.randomize_model(rnd_amplitude, settings.rnd.init);
+        robot.randomize_model(rnd_amp, growth, settings.friction, settings.rnd.init);
     }
     else if ("CONSTANT_ONCE" == settings.rnd.mode) {
-        rnd_amplitude = settings.rnd.value;
-        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amplitude);
+        rnd_amp = settings.rnd.value;
+        sts_msg("Preparing new randomized model with constant amplitude %lf.", rnd_amp);
         if (0 == settings.rnd.init) {
             sts_msg("Using random initial seed: %lu", settings.rnd.init);
-            settings.rnd.init = robot.randomize_model(rnd_amplitude, settings.rnd.init); /* gets back random seed */
+            settings.rnd.init = robot.randomize_model(rnd_amp, growth, settings.friction, settings.rnd.init); /* returns random seed */
         } else {
-            robot.randomize_model(rnd_amplitude, settings.rnd.init);
+            robot.randomize_model(rnd_amp, growth, settings.friction, settings.rnd.init);
         }
     }
     else err_msg(__FILE__,__LINE__,"Unrecognized random mode setting: '%s'.", settings.rnd.mode.c_str());
+
     return;
 }
 
@@ -81,8 +89,9 @@ void Evaluation::draw(void) const
     glprintf(-.99,-.60,0.0, 0.04, "py: %5.2f px: %5.2f" , robot.get_avg_position().y, robot.get_avg_position().x);
     glprintf(-.99,-.65,0.0, 0.04, "power: %5.2f/%lu", data.power, settings.max_power);
     glprintf(-.99,-.70,0.0, 0.04, "steps: %5lu/%lu" , data.steps, settings.max_steps);
-    glprintf(-.99,-.75,0.0, 0.04, "randomness: %5.2f", rnd_amplitude);
-    glprints(-.99,-.80,0.0, 0.04, settings.project_name);
+    glprintf(-.99,-.75,0.0, 0.04, "random: %5.2f pa", rnd_amp*100);
+    glprintf(-.99,-.80,0.0, 0.04, "growth: %5.2f pa", growth*100);
+    glprints(-.99,-.85,0.0, 0.04, settings.project_name);
 }
 
 void
@@ -132,7 +141,6 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
     {
         uint64_t max_initial_steps = settings.initial_steps + rnd_steps;
         control.set_control_parameter(param0); // load seed controller
-        if (verbose) dbg_msg(" %u initial + %u random steps" , settings.initial_steps, rnd_steps); // TODO remove
 
         while (data.steps < max_initial_steps) // wait
         {
@@ -179,12 +187,14 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
 
         control.execute_cycle();
 
-        // TODO make the pushes have all same AUC (area under curve) smaller pushes have longer duration
+        /* IDEA: consider making nudges that have all same AUC (area under curve)
+           i.a. smaller pushes have longer duration */
+
         if (push_on)
         {
             switch (settings.push.mode)
-            { // random pushes
-            case 0:
+            {
+            case 0: /*RANDOM BODY, RANDOM FORCE */
                 if (data.steps % settings.push.cycle == 0)
                 {
                     push_force.random(-settings.push.strength, settings.push.strength);
@@ -198,7 +208,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                 }
                 break;
 
-            case 1:
+            case 1: /* SPECIFIC BODY, SPECIFIC FORCE, X-DIRECTION */
                 if (data.steps == settings.push.cycle)
                 {
                     push_force.x = settings.push.strength;
@@ -209,12 +219,12 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
                 }
                 break;
 
-            case 2:
+            case 2: /* SPECIFIC JOINT, INSERT MOTOR COMMAND */
                 if (data.steps <= settings.push.steps)
                     control.insert_motor_command(settings.push.body,settings.push.strength);
                 break;
 
-            case 3:
+            case 3: /* RANDOM BODY, INCREASING WITH TIME */
                 if (data.steps % settings.push.cycle == 0)
                 {
                     double a = clip(static_cast<double> (data.steps) / settings.max_steps, 0.0, 1.0);
@@ -231,6 +241,7 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
             }
         }
         data.power += control.get_normalized_mechanical_power();
+        data.dctrl += control.get_normalized_control_change();
 
         if (!robot.update())
         {
@@ -247,29 +258,36 @@ Evaluation::evaluate(Fitness_Value &fitness, const std::vector<double>& genome, 
         /* drop penalty */
         if (data.dropped or data.out_of_track or data.stopped)
         {
-            if (verbose) sts_msg(" %04d/%04d %s%s%s", data.steps, settings.max_steps
-                                                    , data.dropped      ? "[Dropped]"      : ""
-                                                    , data.out_of_track ? "[Out of track]" : ""
-                                                    , data.stopped      ? "[Stopped]"      : "" );
+            if (verbose) sts_add("%04d/%04d %s%s%s", data.steps, settings.max_steps
+                                                   , data.dropped      ? "[Dropped]" : ""
+                                                   , data.out_of_track ? "[Outside]" : ""
+                                                   , data.stopped      ? "[Stopped]" : "" );
             break;
         }
 
         /* evolve efficient motion? */
         if (settings.efficient && (data.power >= settings.max_power))
         {
-            if (verbose) sts_msg(" %04d/%04d Power exceeded.", data.steps, settings.max_steps);
+            if (verbose) sts_add("%04d/%04d [PowerEx]", data.steps, settings.max_steps);
+            break;
+        }
+
+        /* evolve jerk reduced motion? */
+        if (settings.efficient && (data.dctrl >= settings.max_dctrl))
+        {
+            if (verbose) sts_add("%04d/%04d [DCtrlEx]", data.steps, settings.max_steps);
             break;
         }
 
         if (data.steps >= settings.max_steps)
         {
-            if (verbose) sts_msg(" %04d/%04d Time's up.", data.steps, settings.max_steps);
+            if (verbose) sts_add("%04d/%04d [TimeOut]", data.steps, settings.max_steps);
         }
     }
 
     fitness_function->finish(data);
 
-    dbg_msg("L1=%1.3f #=%u(%u)", control.get_L1_norm(), control.get_number_of_symmetric_parameter(), control.get_number_of_parameter());
+    //dbg_msg("L1=%1.3f #=%u(%u)", control.get_L1_norm(), control.get_number_of_symmetric_parameter(), control.get_number_of_parameter());
 
     robot.restore_state();
     fitness.set_value(data.fit);

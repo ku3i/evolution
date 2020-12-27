@@ -27,12 +27,20 @@
 #include <draw/plot1D.h>
 #include <draw/plot2D.h>
 
+
+/**IDEA:
+
+* + change string based communication to byte-based... saves network time.
+* + split evolution and evaluation, make several instances of evaluation ...  1 evo : N eval (use servers)
+* + analyze time step of simloid. optimize if possible.
+*/
+
 extern GlobalFlag do_pause;
 
 class Evaluation : public virtual Evaluation_Interface
 {
 public:
-    Evaluation(const Setting& settings, Datalog& logger, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0, uint64_t& cycles)
+    Evaluation(Setting const& settings, Datalog& logger, robots::Simloid& robot, control::Jointcontrol& control, control::Control_Parameter& param0, uint64_t& cycles)
     : settings(settings)
     , logger(logger)
     , robot(robot)
@@ -49,7 +57,7 @@ public:
     , plot_position_z (std::min(10000u, settings.max_steps), axis_position_z , colors::cyan)
     , plot_rotation_z (std::min(10000u, settings.max_steps), axis_position_z , colors::magenta)
     , plot_velocity_y (std::min(10000u, settings.max_steps), axis_position_z , colors::yellow)
-    /**TODO print out mutation rate average and std dev */
+    /**IDEA: print out mutation rate average and std dev */
     {
         sts_msg("Creating evaluation function.");
 
@@ -70,7 +78,7 @@ public:
     void logdata(uint32_t, uint32_t);
 
 private:
-    const Setting&              settings;
+    Setting const&              settings; /**IDEA re-loadable settings!*/
     Datalog&                    logger;
     robots::Simloid&            robot;
     control::Jointcontrol&      control;
@@ -80,7 +88,8 @@ private:
     const bool                  verbose;
     uint64_t&                   cycles;
 
-    double                      rnd_amplitude = .0;
+    double                      rnd_amp  = .0;
+    double                      growth   = 1.0; //100%
 
     /*logs*/
     robots::Simloid_Log         robot_log;
@@ -97,8 +106,12 @@ private:
 
 
 std::vector<double> create_motor_params(Setting const& settings) {
-    if ("NONE" == settings.rnd.mode) return {};
-    else return {static_cast<double>(settings.rnd.init), settings.rnd.value};
+    if ("NONE" == settings.rnd.mode) return {0.0, 0.0, clip(settings.growth.init + settings.cur_trials * settings.growth.rate,0.,1.), settings.friction};
+    else return { static_cast<double>(settings.rnd.init)
+                , settings.rnd.value
+                , clip(settings.growth.init + settings.cur_trials * settings.growth.rate,0.,1.)
+                , settings.friction
+                };
 }
 
 class Application : public Application_Base
@@ -109,12 +122,18 @@ public:
     Application(int argc, char** argv, Event_Manager& em)
     : Application_Base(argc, argv, em, "Evolution", 640, 640)
     , settings(argc, argv)
-    , robot(settings.tcp_port, settings.robot_ID, settings.scene_ID, settings.visuals, /*realtime =*/ true, create_motor_params(settings))
+    , robot( settings.interlaced_mode
+           , settings.tcp_port
+           , settings.robot_ID
+           , settings.scene_ID
+           , settings.visuals
+           , /*realtime =*/ true
+           , create_motor_params(settings) )
     , control(robot)
     , seed( control::initialize_anyhow( robot
                                       , control
                                       , settings.symmetric_controller
-                                      , { settings.param_p, settings.param_d, settings.param_m }
+                                      , settings.param
                                       , settings.seed ))
     , evaluation(settings, logger, robot, control, seed, cycles)
     , evolution((settings.project_status == NEW) ? new Evolution(evaluation, settings, seed.get_parameter())
@@ -131,8 +150,6 @@ public:
         if (not settings.visuals) do_pause.disable(); // no pause with disabled GUI
         sts_msg("Done preparing evolution.");
     }
-
-    ~Application() { dbg_msg("Destroying application."); }
 
     bool loop();
     void finish();
@@ -152,7 +169,7 @@ private:
     axes axis_fitness;
     plot1D plot1D_max_fitness;
     plot1D plot1D_avg_fitness;
-    plot1D plot1D_min_fitness; /**TODO think about putting all graphics stuff to evolution_graphics class*/
+    plot1D plot1D_min_fitness; /**IDEA think about putting all graphics stuff to evolution_graphics class*/
 
     axes axis_mutation;
     plot1D plot1D_max_mutation;
