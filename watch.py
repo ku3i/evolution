@@ -15,6 +15,8 @@ binary = "./bin/Release/evolution"
 exp_list = []
 port0 = 8000
 
+what_state = [2]
+
 def is_experiment(path):
     return isdir(path) \
         and isfile(path+"/"+conf_file)
@@ -26,7 +28,7 @@ def is_completed(path):
         data = f.read()
     m = re.search("STATUS = (\d+)", data)
     if m:
-        return 2 == int(m.groups()[0])
+        return int(m.groups()[0]) in what_state
     print("ERROR: Did not find max. status entry in {0}".format(conf))
     return False
 
@@ -79,12 +81,16 @@ def show_experiments():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--filter' , default='')
-    parser.add_argument('-p', '--path'   , default=exp_dir)
+    parser.add_argument('-f', '--filter'     , default='')
+    parser.add_argument('-p', '--path'       , default=exp_dir)
+    parser.add_argument('-i', '--incomplete' , action='store_true')
     args = parser.parse_args()
 
     filt = str(args.filter)
     path = str(args.path)
+
+    if args.incomplete:
+        what_state.append(1)
 
     if isdir(path):
         try:
