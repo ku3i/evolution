@@ -128,7 +128,9 @@ public:
            , settings.scene_ID
            , settings.visuals
            , /*realtime =*/ true
-           , create_motor_params(settings) )
+           , create_motor_params(settings)
+           , settings.initially_fixed
+           )
     , control(robot)
     , seed( control::initialize_anyhow( robot
                                       , control
