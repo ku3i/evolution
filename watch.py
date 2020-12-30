@@ -12,6 +12,7 @@ from os.path import isfile, isdir
 exp_dir   = "../data/exp"
 conf_file = "evolution.conf"
 binary = "./bin/Release/evolution"
+logging_options = " --enable_logging --include_video"
 exp_list = []
 port0 = 8000
 
@@ -67,8 +68,12 @@ def execute_command(command):
     return proc.returncode
 
 
-def watch(expname, port, dry = False):
-    command = "{0} -w {1} -p {2}".format(binary, expname, port + port0)
+def watch(expname, port, dry = False, log = False):
+    cmd_bin = binary
+    if log:
+        cmd_bin += logging_options
+
+    command = "{0} -w {1} -p {2}".format(cmd_bin, expname, port + port0)
     if not dry:
         exitcode = execute_command(command)
         print "OK." if exitcode==0 else "FAILED. Code {0}".format(exitcode)
@@ -84,6 +89,7 @@ def main():
     parser.add_argument('-f', '--filter'     , default='')
     parser.add_argument('-p', '--path'       , default=exp_dir)
     parser.add_argument('-i', '--incomplete' , action='store_true')
+    parser.add_argument('-l', '--logging'    , action='store_true')
     args = parser.parse_args()
 
     filt = str(args.filter)
@@ -103,7 +109,7 @@ def main():
         if inp.isdigit():
             idx_num = int(inp)
             if 0 <= idx_num < len(exp_list):
-                watch(exp_list[idx_num], idx_num)
+                watch(exp_list[idx_num], idx_num, log = args.logging)
         if inp == "":
             break
         else:
