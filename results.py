@@ -11,8 +11,6 @@
 
 import re, argparse, shlex
 from subprocess import Popen
-from os import listdir, mkdir
-from os.path import isfile, isdir
 
 import pandas as pd
 import numpy as np
@@ -39,7 +37,7 @@ def plot_joints(jp,jv,ju, save = False):
         ax.plot(jv[i], color=tableau20[0], lw = 1.0, alpha= 0.5, marker='.')
         ax.plot(ju[i], color=tableau20[1], lw = 1.0, alpha= 0.5, marker='.')
         ax.plot(jp[i], color=tableau20[2], lw = 1.0, alpha= 0.5, marker='.')
-
+        ax.legend(['v','u','p'], loc="lower right")
     if save:
         plt.savefig("{0}{1}".format(experiment, pdfname), bbox_inches="tight")
 
@@ -80,7 +78,7 @@ def read_and_plot_single_experiment(expname):
     data = read_data_log(expname+"/data/"+constants.data_log, columns)
     data.ename = expname
 
-    ts, te = get_time(data, 200,400)
+    ts, te = get_time(data, 0,2000)
     print("plotting from timestep {0} to {1}".format(ts,te))
 
     # prepare data
@@ -95,15 +93,15 @@ def read_and_plot_single_experiment(expname):
     avg_pos_y  = data["avg_pos_y" ].values[ts:te]
     avg_vel_fw = data["avg_vel_fw"].values[ts:te]
 
-    #plot_joints(jp,jv,ju)
-    plot_phase_space(jp,jv,ju)
+    plot_joints(jp,jv,ju)
+    #plot_phase_space(jp,jv,ju)
     #plot_walked_distance(avg_pos_y,avg_vel_fw)
     return data
 
 
 def plot_all_experiment(data_all):
     print("Plotting graphs for all {0} experiments.".format(len(data_all)))
-    
+
     names = []
     fig, (ax1,ax2) = plt.subplots(2, 1, sharex=True)
     for i, data in enumerate(data_all):
@@ -111,7 +109,7 @@ def plot_all_experiment(data_all):
 
         avg_pos_y  = np.abs(data["avg_pos_y" ].values[ts:te])
         ax1.plot(avg_pos_y , color=tableau20[i], lw = 1.0, alpha= 0.5, marker='.')
-        
+
         avg_vel_fw = np.abs(data["avg_vel_y"].values[ts:te])
         ax2.plot(avg_vel_fw, color=tableau20[i], lw = 1.0, alpha= 0.5, marker='.')
         names.append(data.ename)
